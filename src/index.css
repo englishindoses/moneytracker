@@ -1,0 +1,248 @@
+@import 'tailwindcss';
+
+/* Self-hosted so the app works offline and makes no third-party requests.
+   All three are SIL Open Font License.
+
+   Latin subsets only: the Cyrillic and Vietnamese ranges are dead weight for
+   English and Portuguese, and every byte here lands in the PWA precache. */
+@import '@fontsource/caveat/latin-400.css';
+@import '@fontsource/caveat/latin-600.css';
+@import '@fontsource/caveat/latin-700.css';
+@import '@fontsource/patrick-hand/latin-400.css';
+@import '@fontsource/architects-daughter/latin-400.css';
+
+/* ---------------------------------------------------------------------------
+   Themes. Each is a full palette swap; `data-theme` lives on <html> and is
+   restored from the user's profile so it follows them across devices.
+   --------------------------------------------------------------------------- */
+
+:root,
+[data-theme='neutral'] {
+  --paper: #faf8f4;
+  --paper-edge: #efe9df;
+  --card: #fffdf9;
+  --ink: #2f2b26;
+  --ink-soft: #6f6a62;
+  --ink-faint: #a29b90;
+  --rule: #ddd7cd;
+  --accent: #55504a;
+  --accent-soft: #e6e1d8;
+  --accent-2: #9a9288;
+  --money-in: #3f7a52;
+  --money-out: #b23a2f;
+  --tape: #e3ddd1;
+  --cover: #6d675e;
+  --cover-2: #514c45;
+  --doodle-opacity: 0.05;
+}
+
+[data-theme='warm'] {
+  --paper: #fdf6f3;
+  --paper-edge: #f3e2df;
+  --card: #fffbf9;
+  --ink: #4a3640;
+  --ink-soft: #8b7280;
+  --ink-faint: #bda6b0;
+  --rule: #ecd4da;
+  --accent: #c26e8a;
+  --accent-soft: #f7e6ec;
+  --accent-2: #8fae86;
+  --money-in: #4e8b6a;
+  --money-out: #c0392b;
+  --tape: #f3dfc9;
+  --cover: #b4657f;
+  --cover-2: #8d4a62;
+  --doodle-opacity: 0.08;
+}
+
+[data-theme='cool'] {
+  --paper: #f4f6f8;
+  --paper-edge: #dfe6ec;
+  --card: #fbfcfd;
+  --ink: #24303c;
+  --ink-soft: #5d6b7a;
+  --ink-faint: #97a4b1;
+  --rule: #cdd8e2;
+  --accent: #2f5d7c;
+  --accent-soft: #e0e9f0;
+  --accent-2: #b07d3f;
+  --money-in: #2f7d5b;
+  --money-out: #b3382f;
+  --tape: #d8e2ea;
+  --cover: #2c4a63;
+  --cover-2: #1d3346;
+  --doodle-opacity: 0.07;
+}
+
+/* `inline` so the utilities resolve the custom property at use site, which is
+   what makes runtime theme switching work without rebuilding Tailwind. */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-edge: var(--paper-edge);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-2: var(--accent-2);
+  --color-money-in: var(--money-in);
+  --color-money-out: var(--money-out);
+  --color-tape: var(--tape);
+
+  --font-hand: 'Caveat', 'Segoe Script', cursive;
+  --font-note: 'Patrick Hand', 'Comic Sans MS', cursive;
+  --font-sketch: 'Architects Daughter', cursive;
+}
+
+/* ---------------------------------------------------------------------------
+   Paper
+   --------------------------------------------------------------------------- */
+
+html {
+  background: var(--paper);
+  /* Stop iOS Safari zooming the layout when an input takes focus. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-note);
+  font-size: 17px;
+  line-height: 1.45;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The dot grid every bullet journal is built on. */
+.paper-dots {
+  background-color: var(--paper);
+  background-image: radial-gradient(var(--rule) 1.1px, transparent 1.2px);
+  background-size: 22px 22px;
+  background-position: -11px -11px;
+}
+
+.paper-lines {
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    var(--rule) 31px,
+    var(--rule) 32px
+  );
+}
+
+/* Numbers get a clean face with fixed-width digits so columns line up, even
+   though everything around them is handwriting. */
+.tabular {
+  font-family: ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Hand-drawn looking frames: slightly uneven radii read as ink, not CSS. */
+.sketch-box {
+  border: 1.5px solid var(--ink-faint);
+  border-radius: 14px 10px 16px 9px;
+}
+
+.sketch-box-accent {
+  border: 1.5px solid var(--accent);
+  border-radius: 12px 16px 9px 14px;
+}
+
+.tape {
+  background: var(--tape);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+/* ---------------------------------------------------------------------------
+   Entry row layout.
+
+   Grid areas rather than responsive column ordering, so the DOM order stays
+   logical (and tab order sensible) while the phone layout stacks into three
+   lines and the desktop layout becomes a single ledger row.
+   --------------------------------------------------------------------------- */
+
+/* No `display` here on purpose — the utilities (`grid`, `hidden`) own that, and
+   a plain rule outside Tailwind's layers would otherwise win over `hidden` and
+   show the desktop header row on phones. */
+.row-income,
+.row-expense {
+  align-items: center;
+  gap: 2px 8px;
+  /* Fixed widths for the tick and amount columns: an <input> contributes a
+     ~20-character intrinsic width to an `auto` track, which would starve the
+     name and date of space. */
+  grid-template-columns: minmax(0, 1fr) 2.75rem 6.75rem;
+}
+
+/* Form controls default to an intrinsic min-width that refuses to shrink,
+   which pushes the amounts off the side of a narrow screen. */
+.row-income input,
+.row-expense input {
+  min-width: 0;
+}
+
+/* iOS Safari zooms the whole page when a focused input is under 16px, which is
+   jarring mid-entry. Phones get 16px; wider screens can afford denser text. */
+@media (max-width: 699px) {
+  .row-income input,
+  .row-expense input {
+    font-size: 16px;
+  }
+}
+
+.row-income {
+  grid-template-areas:
+    'name tick del'
+    'date date expected'
+    'rdate rdate received';
+}
+
+.row-expense {
+  grid-template-areas:
+    'name tick del'
+    'date date due'
+    'paid paid paid';
+}
+
+@media (min-width: 700px) {
+  .row-income {
+    grid-template-columns: minmax(0, 1.6fr) 8.5rem 7rem 7rem 2.75rem 8.5rem 2rem;
+    grid-template-areas: 'name date expected received tick rdate del';
+  }
+
+  .row-expense {
+    grid-template-columns: minmax(0, 1.8fr) 8.5rem 7.5rem 7.5rem 2.75rem 2rem;
+    grid-template-areas: 'name date due paid tick del';
+  }
+}
+
+.cell-label {
+  font-family: var(--font-sketch);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Keep focus visible for keyboard users without boxing every mouse click. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

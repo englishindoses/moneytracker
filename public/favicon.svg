@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Money Tracker">
+  <rect width="64" height="64" rx="14" fill="#faf8f4" />
+  <!-- notebook cover -->
+  <path d="M16 10h30a4 4 0 0 1 4 4v36a4 4 0 0 1-4 4H16z" fill="#55504a" />
+  <!-- spine -->
+  <rect x="12" y="10" width="6" height="44" rx="2" fill="#2f2b26" />
+  <!-- label sticker with a currency mark -->
+  <rect x="24" y="19" width="20" height="26" rx="3" fill="#faf8f4" />
+  <g fill="none" stroke="#2f2b26" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 26h5a3 3 0 0 1 0 6h-4M31 32h4a3 3 0 0 1 0 6h-5" />
+    <path d="M34 23v18" />
+  </g>
+</svg>
