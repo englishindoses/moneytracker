@@ -15,7 +15,7 @@ would actually involve.
 
 - **Expense categories** — the `category` column exists on `expense_entries` and
   is unused. Needs the list of categories, a picker in the row, and grouping in
-  the totals. No migration required.
+  the totals. No schema change required.
 
 - **Notes per row** — the `notes` column exists on both tables, likewise unused.
 
@@ -29,7 +29,7 @@ would actually involve.
 
 ## Phase 2: true offline
 
-The groundwork is already in place, so this does not need a schema migration:
+The groundwork is already in place, so this needs no change to the schema:
 
 - Primary keys are UUIDs generated on the client, so rows can be created offline
   and keep their identity when they sync.

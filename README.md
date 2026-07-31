@@ -26,9 +26,15 @@ and Portuguese (BR).
 
 1. Create a project at [supabase.com](https://supabase.com) (region: South
    America / São Paulo).
-2. Open **SQL Editor → New query**, paste all of
-   `supabase/migrations/0001_init.sql`, and run it. This creates the tables, the
-   Row Level Security policies and the delete-all-data function.
+2. Open **SQL Editor → New query**, paste all of `supabase/schema.sql`, and run
+   it. This creates the tables, the Row Level Security policies and the
+   delete-all-data function.
+
+   `supabase/schema.sql` is the only database file in this project, and it is
+   safe to run repeatedly — it contains no `drop table`, `truncate` or `delete`,
+   and every statement either creates what is missing or leaves what exists
+   untouched. When the schema changes, that same file is updated and pasted
+   again; there are no numbered migration files to keep track of.
 3. Go to **Authentication → Sign In / Providers → Email** and make sure Email is
    enabled. If you would rather not wait for a confirmation email on sign-up,
    turn **Confirm email** off.
@@ -72,7 +78,7 @@ In **Settings → Pages**, set Source to **GitHub Actions**.
 | `src/lib/export.ts`      | The `.xlsx` and PDF exports                                   |
 | `src/doodles/`           | Hand-written SVG doodles, no third-party assets                |
 | `src/index.css`          | The three themes, as swappable CSS custom properties           |
-| `supabase/migrations/`   | Schema and RLS                                                 |
+| `supabase/schema.sql`    | Schema and RLS — one file, safe to re-run                      |
 
 ## Themes and fonts
 
