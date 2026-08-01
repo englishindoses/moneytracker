@@ -1,4 +1,4 @@
-export type ThemeName = 'neutral' | 'warm' | 'cool'
+export type ThemeName = 'neutral' | 'warm' | 'cool' | 'typewriter'
 export type LanguageCode = 'en-GB' | 'pt-BR'
 
 export interface Profile {
@@ -59,3 +59,26 @@ export type ExpensePatch = Partial<
 
 export type IncomeInsert = Pick<IncomeEntry, 'id' | 'period'> & Partial<IncomeEntry>
 export type ExpenseInsert = Pick<ExpenseEntry, 'id' | 'period'> & Partial<ExpenseEntry>
+
+/* -------------------------------------------------------------------------- */
+
+export type RecurringKind = 'income' | 'expense'
+
+/** A line on the reusable list. It is a template, not an entry: pasting it into
+ *  a month copies these values into a real income/expense row and then forgets
+ *  where they came from. */
+export interface RecurringItem {
+  id: string
+  user_id: string
+  kind: RecurringKind
+  name: string
+  /** 1–31, or null for "no particular day". Clamped to the month when pasted. */
+  day_of_month: number | null
+  amount: number
+  sort_order: number
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+export type RecurringPatch = Partial<Pick<RecurringItem, 'name' | 'day_of_month' | 'amount'>>

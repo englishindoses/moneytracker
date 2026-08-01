@@ -7,6 +7,7 @@ import {
   DotGridSquare,
   Flower,
   LeafSprig,
+  Paperclip,
   Piggy,
   Sparkle,
   Star,
@@ -29,7 +30,9 @@ export function PageDecor() {
       ? { a: LeafSprig, b: Flower, c: Berries, d: Star }
       : theme === 'cool'
         ? { a: ArrowCluster, b: Triangles, c: DotGridSquare, d: Sparkle }
-        : { a: Checklist, b: Coin, c: Piggy, d: Star }
+        : theme === 'typewriter'
+          ? { a: Checklist, b: Piggy, c: Paperclip, d: Coin }
+          : { a: Checklist, b: Coin, c: Piggy, d: Star }
 
   const { a: TopLeft, b: BottomRight, c: MidRight, d: Accent } = set
 

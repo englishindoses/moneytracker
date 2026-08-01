@@ -132,6 +132,54 @@ create index if not exists expense_user_period_idx
 
 
 -- =============================================================================
+-- recurring_items — the reusable list that gets pasted into a month
+--
+--  * One table for both kinds, told apart by `kind`. Income and expense
+--    templates carry exactly the same three facts (a name, a day of the month
+--    and an amount), so two tables would have been the same table twice.
+--  * `day_of_month` is 1–31 and is clamped to the real length of the target
+--    month by the app when the list is pasted, so "the 31st" still lands in
+--    February.
+--  * Pasting copies values into normal income/expense rows. Nothing links back
+--    here afterwards: an entry created from the list is an ordinary entry and
+--    editing it never touches the template.
+-- =============================================================================
+create table if not exists public.recurring_items (
+  id      uuid primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  kind    text not null
+);
+
+alter table public.recurring_items
+  add column if not exists name         text not null default '',
+  add column if not exists day_of_month integer,
+  add column if not exists amount       numeric(14, 2) not null default 0,
+  add column if not exists sort_order   integer not null default 0,
+  add column if not exists created_at   timestamptz not null default now(),
+  add column if not exists updated_at   timestamptz not null default now(),
+  add column if not exists deleted_at   timestamptz;
+
+-- Added as a named constraint rather than inline so re-running is a no-op.
+do $$
+begin
+  alter table public.recurring_items
+    add constraint recurring_items_kind_check check (kind in ('income', 'expense'));
+exception
+  when duplicate_object then null;
+end;
+$$;
+
+drop trigger if exists recurring_set_updated_at on public.recurring_items;
+create trigger recurring_set_updated_at
+  before update on public.recurring_items
+  for each row execute function public.set_updated_at();
+
+create index if not exists recurring_user_kind_idx
+  on public.recurring_items (user_id, kind)
+  where deleted_at is null;
+
+
+-- =============================================================================
 -- Row Level Security
 --
 -- This is what makes it safe for the app's key to sit in a public web page:
@@ -141,6 +189,7 @@ create index if not exists expense_user_period_idx
 alter table public.profiles        enable row level security;
 alter table public.income_entries  enable row level security;
 alter table public.expense_entries enable row level security;
+alter table public.recurring_items enable row level security;
 
 drop policy if exists "own profile: select" on public.profiles;
 create policy "own profile: select" on public.profiles
@@ -186,6 +235,22 @@ drop policy if exists "own expenses: delete" on public.expense_entries;
 create policy "own expenses: delete" on public.expense_entries
   for delete using (auth.uid() = user_id);
 
+drop policy if exists "own recurring: select" on public.recurring_items;
+create policy "own recurring: select" on public.recurring_items
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "own recurring: insert" on public.recurring_items;
+create policy "own recurring: insert" on public.recurring_items
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "own recurring: update" on public.recurring_items;
+create policy "own recurring: update" on public.recurring_items
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "own recurring: delete" on public.recurring_items;
+create policy "own recurring: delete" on public.recurring_items
+  for delete using (auth.uid() = user_id);
+
 
 -- =============================================================================
 -- Give every new account a profile row automatically
@@ -223,5 +288,6 @@ as $$
 begin
   delete from public.income_entries  where user_id = auth.uid();
   delete from public.expense_entries where user_id = auth.uid();
+  delete from public.recurring_items where user_id = auth.uid();
 end;
 $$;

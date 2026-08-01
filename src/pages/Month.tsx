@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { AppHeader } from '../components/AppHeader'
 import { ExpenseRow } from '../components/ExpenseRow'
 import { IncomeRow } from '../components/IncomeRow'
@@ -12,9 +12,12 @@ import {
   useDeleteIncome,
   useExpenses,
   useIncome,
+  usePasteRecurring,
   useUpdateExpense,
   useUpdateIncome,
+  type PasteResult,
 } from '../data/hooks'
+import type { RecurringKind } from '../data/types'
 import { currentPeriod, defaultDateFor, monthAndYear } from '../lib/months'
 import { monthTotals } from '../lib/totals'
 import { useSettings } from '../lib/settings'
@@ -38,6 +41,14 @@ export function Month() {
   const addExpense = useAddExpense(period)
   const updateExpense = useUpdateExpense(period)
   const deleteExpense = useDeleteExpense(period)
+
+  const paste = usePasteRecurring(period)
+  const [pasted, setPasted] = useState<(PasteResult & { kind: RecurringKind }) | null>(null)
+
+  function handlePaste(kind: RecurringKind) {
+    setPasted(null)
+    paste.mutate(kind, { onSuccess: (result) => setPasted({ ...result, kind }) })
+  }
 
   const totals = useMemo(
     () => monthTotals(income.data ?? [], expenses.data ?? []),
@@ -130,6 +141,12 @@ export function Month() {
               {t('income.addRow')}
             </AddButton>
 
+            <PasteRow
+              onPaste={() => handlePaste('income')}
+              pending={paste.isPending}
+              result={pasted?.kind === 'income' ? pasted : null}
+            />
+
             <TotalsBar
               left={{ label: t('totals.expected'), value: totals.expected }}
               right={{ label: t('totals.received'), value: totals.received, tone: 'in' }}
@@ -174,6 +191,12 @@ export function Month() {
             >
               {t('expenses.addRow')}
             </AddButton>
+
+            <PasteRow
+              onPaste={() => handlePaste('expense')}
+              pending={paste.isPending}
+              result={pasted?.kind === 'expense' ? pasted : null}
+            />
 
             <TotalsBar
               left={{ label: t('totals.due'), value: totals.due }}
@@ -265,6 +288,48 @@ function AddButton({
       </span>
       {children}
     </button>
+  )
+}
+
+/** Paste the recurring list into this month, with a link to go and edit it. */
+function PasteRow({
+  onPaste,
+  pending,
+  result,
+}: {
+  onPaste: () => void
+  pending: boolean
+  result: PasteResult | null
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <button
+          type="button"
+          onClick={onPaste}
+          disabled={pending}
+          className="font-sketch flex-1 rounded-[9px_12px_8px_13px] border-[1.5px] border-ink-faint px-4 py-2 text-ink-soft transition-colors hover:border-accent hover:text-ink disabled:opacity-60"
+        >
+          {pending ? t('recurring.pasting') : t('recurring.paste')}
+        </button>
+        <Link
+          to="/recurring"
+          className="font-sketch px-1 text-[0.85rem] text-ink-soft underline decoration-ink-faint underline-offset-4 hover:text-ink"
+        >
+          {t('recurring.edit')}
+        </Link>
+      </div>
+
+      {result && (
+        <p role="status" className="font-sketch mt-1 px-1 text-[0.8rem] text-ink-soft">
+          {result.added === 0 && result.skipped === 0
+            ? t('recurring.pasteEmpty')
+            : t('recurring.pasteDone', { added: result.added, skipped: result.skipped })}
+        </p>
+      )}
+    </div>
   )
 }
 

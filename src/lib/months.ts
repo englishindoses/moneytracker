@@ -76,6 +76,19 @@ export function defaultDateFor(period: Period): string {
   return period
 }
 
+export function daysInPeriod(period: Period): number {
+  return new Date(Date.UTC(yearOf(period), monthIndexOf(period) + 1, 0)).getUTCDate()
+}
+
+/** The nth day of a given month, as an ISO date. A day past the end of the
+ *  month lands on its last day, so a recurring item due on the 31st still has
+ *  somewhere to go in February. */
+export function dateInPeriod(period: Period, day: number | null): string | null {
+  if (day === null || !Number.isFinite(day)) return null
+  const clamped = Math.min(Math.max(Math.trunc(day), 1), daysInPeriod(period))
+  return `${period.slice(0, 8)}${String(clamped).padStart(2, '0')}`
+}
+
 export function isCurrentPeriod(period: Period): boolean {
   return period === currentPeriod()
 }

@@ -5,6 +5,7 @@ import { SettingsProvider } from './lib/settings'
 import { Login } from './pages/Login'
 import { Month } from './pages/Month'
 import { Months } from './pages/Months'
+import { Recurring } from './pages/Recurring'
 import { Settings } from './pages/Settings'
 
 const queryClient = new QueryClient({
@@ -49,6 +50,7 @@ function Gate() {
     <Routes>
       <Route path="/" element={<Months />} />
       <Route path="/m/:period" element={<Month />} />
+      <Route path="/recurring" element={<Recurring />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

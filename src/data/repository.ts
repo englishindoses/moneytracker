@@ -13,6 +13,9 @@ import type {
   IncomePatch,
   LanguageCode,
   Profile,
+  RecurringItem,
+  RecurringKind,
+  RecurringPatch,
   ThemeName,
 } from './types'
 
@@ -186,6 +189,75 @@ export async function updateExpense(id: string, patch: ExpensePatch): Promise<Ex
 export async function deleteExpense(id: string): Promise<void> {
   const { error } = await supabase
     .from('expense_entries')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ---------------------------------------------------------------------------
+// Bulk insert — used when the recurring list is pasted into a month
+// ---------------------------------------------------------------------------
+
+export async function createIncomeMany(
+  rows: (Pick<IncomeEntry, 'id' | 'period'> & Partial<IncomeEntry>)[],
+): Promise<IncomeEntry[]> {
+  if (rows.length === 0) return []
+  const { data, error } = await supabase.from('income_entries').insert(rows).select('*')
+  if (error) throw error
+  return (data ?? []).map(mapIncome)
+}
+
+export async function createExpenseMany(
+  rows: (Pick<ExpenseEntry, 'id' | 'period'> & Partial<ExpenseEntry>)[],
+): Promise<ExpenseEntry[]> {
+  if (rows.length === 0) return []
+  const { data, error } = await supabase.from('expense_entries').insert(rows).select('*')
+  if (error) throw error
+  return (data ?? []).map(mapExpense)
+}
+
+// ---------------------------------------------------------------------------
+// Recurring list
+// ---------------------------------------------------------------------------
+
+function mapRecurring(row: RecurringItem): RecurringItem {
+  return { ...row, amount: num(row.amount) }
+}
+
+export async function fetchRecurring(kind: RecurringKind): Promise<RecurringItem[]> {
+  const { data, error } = await supabase
+    .from('recurring_items')
+    .select('*')
+    .eq('kind', kind)
+    .is('deleted_at', null)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return (data ?? []).map(mapRecurring)
+}
+
+export async function createRecurring(
+  row: Pick<RecurringItem, 'id' | 'kind'> & Partial<RecurringItem>,
+): Promise<RecurringItem> {
+  const { data, error } = await supabase.from('recurring_items').insert(row).select('*').single()
+  if (error) throw error
+  return mapRecurring(data as RecurringItem)
+}
+
+export async function updateRecurring(id: string, patch: RecurringPatch): Promise<RecurringItem> {
+  const { data, error } = await supabase
+    .from('recurring_items')
+    .update(patch)
+    .eq('id', id)
+    .select('*')
+    .single()
+  if (error) throw error
+  return mapRecurring(data as RecurringItem)
+}
+
+export async function deleteRecurring(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('recurring_items')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id)
   if (error) throw error

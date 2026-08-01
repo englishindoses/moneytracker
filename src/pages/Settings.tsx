@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { AppHeader } from '../components/AppHeader'
 import { useExpensesRange, useIncomeRange } from '../data/hooks'
 import * as repo from '../data/repository'
@@ -12,7 +13,7 @@ import { currentPeriod, monthAndYear, monthsOfYear, currentYear, periodRange } f
 import { getStaySignedIn, migrateSessionStorage, setStaySignedIn } from '../lib/supabase'
 import { useSettings } from '../lib/settings'
 
-const THEMES: ThemeName[] = ['warm', 'cool', 'neutral']
+const THEMES: ThemeName[] = ['neutral', 'warm', 'cool', 'typewriter']
 
 export function Settings() {
   const { t } = useTranslation()
@@ -23,6 +24,7 @@ export function Settings() {
       <main className="relative z-10 mx-auto max-w-2xl space-y-4 px-4">
         <LanguageSection />
         <ThemeSection />
+        <RecurringSection />
         <AccountSection />
         <DataSection />
       </main>
@@ -77,35 +79,50 @@ function LanguageSection() {
   )
 }
 
+/**
+ * Each option is rendered *in its own theme* — `data-theme` on the card
+ * re-declares every variable for that subtree, so the swatch shows the real
+ * paper, the real typefaces and the real corners, not a description of them.
+ */
 function ThemeSection() {
   const { t } = useTranslation()
   const { theme, setTheme } = useSettings()
 
   return (
     <Section title={t('settings.theme')} hint={t('settings.savedToAccount')}>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         {THEMES.map((name) => (
           <button
             key={name}
             type="button"
             onClick={() => setTheme(name)}
             aria-pressed={theme === name}
-            className={`rounded-[11px_8px_12px_9px] border-[1.5px] px-3 py-3 text-left transition-colors ${
-              theme === name ? 'border-accent bg-accent-soft' : 'border-ink-faint hover:border-accent'
+            aria-label={t(`themes.${name}`)}
+            className={`overflow-hidden rounded-[11px_8px_12px_9px] border-[2px] text-left transition-colors ${
+              theme === name ? 'border-accent' : 'border-ink-faint/60 hover:border-accent'
             }`}
           >
-            <span className="font-hand block text-[1.35rem] leading-none">
-              {t(`themes.${name}`)}
-            </span>
-            <span className="font-sketch mt-1 block text-[0.72rem] leading-snug text-ink-faint">
-              {t(`themes.${name}Hint`)}
-            </span>
-            {/* palette chips, drawn with the theme's own variables */}
-            <span aria-hidden="true" className="mt-2 flex gap-1" data-theme={name}>
-              <Chip varName="--paper" />
-              <Chip varName="--accent" />
-              <Chip varName="--accent-2" />
-              <Chip varName="--ink" />
+            <span data-theme={name} className="paper-dots block px-3 py-3 text-ink">
+              <span className="flex items-baseline justify-between gap-2">
+                <span className="font-hand block text-[1.3rem] leading-tight">
+                  {t(`themes.${name}`)}
+                </span>
+                <span className="tabular shrink-0 text-[0.9rem] text-money-in">1.234,56</span>
+              </span>
+
+              <span className="font-note mt-1 block text-[0.85rem] leading-snug text-ink-soft">
+                {t(`themes.${name}Hint`)}
+              </span>
+
+              <span className="sketch-box mt-2 flex items-center gap-1 bg-card px-2 py-1.5">
+                <Chip varName="--accent" />
+                <Chip varName="--accent-2" />
+                <Chip varName="--money-in" />
+                <Chip varName="--money-out" />
+                <span className="font-sketch ml-auto whitespace-nowrap text-[0.68rem] uppercase tracking-wide text-ink-faint">
+                  {theme === name ? t('themes.inUse') : t('themes.use')}
+                </span>
+              </span>
             </span>
           </button>
         ))}
@@ -120,6 +137,25 @@ function Chip({ varName }: { varName: string }) {
       className="h-4 w-4 rounded-full border border-black/10"
       style={{ background: `var(${varName})` }}
     />
+  )
+}
+
+/** Pointer to the recurring list, which is a page of its own. */
+function RecurringSection() {
+  const { t } = useTranslation()
+
+  return (
+    <Section title={t('recurring.title')} hint={t('recurring.settingsHint')}>
+      <Link
+        to="/recurring"
+        className="flex items-center justify-between gap-3 rounded-[11px_8px_12px_9px] border-[1.5px] border-ink-faint px-4 py-2.5 transition-colors hover:border-accent"
+      >
+        {t('recurring.open')}
+        <span aria-hidden="true" className="text-xl text-ink-faint">
+          ›
+        </span>
+      </Link>
+    </Section>
   )
 }
 
@@ -363,9 +399,14 @@ function PreviewTable({
   )
 }
 
-/** Delete-all-data, gated behind typing the confirmation word. */
+/**
+ * Delete-all-data in two steps: press the button, *then* confirm by typing the
+ * word. The confirmation only appears once you have asked for it, so the
+ * settings page isn't sitting there with a delete box waiting to be typed into.
+ */
 function DangerZone({ onDeleted }: { onDeleted: () => void }) {
   const { t } = useTranslation()
+  const [confirming, setConfirming] = useState(false)
   const [word, setWord] = useState('')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -374,6 +415,18 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
   const required = t('data.deleteAllWord')
   const armed = word.trim().toUpperCase() === required.toUpperCase()
 
+  function startConfirming() {
+    setDone(false)
+    setError(null)
+    setWord('')
+    setConfirming(true)
+  }
+
+  function cancel() {
+    setConfirming(false)
+    setWord('')
+  }
+
   async function handleDelete() {
     setBusy(true)
     setError(null)
@@ -381,6 +434,7 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
       await repo.deleteAllData()
       setDone(true)
       setWord('')
+      setConfirming(false)
       onDeleted()
     } catch {
       setError(t('auth.errorGeneric'))
@@ -398,26 +452,49 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
         {t('data.deleteAllHint')}
       </p>
 
-      <label className="mt-3 block">
-        <span className="cell-label mb-1 block">{t('data.deleteAllConfirm')}</span>
-        <input
-          type="text"
-          value={word}
-          onChange={(e) => setWord(e.target.value)}
-          autoComplete="off"
-          placeholder={required}
-          className="w-full rounded-md border-[1.5px] border-money-out/50 bg-card px-3 py-2 outline-none focus:border-money-out"
-        />
-      </label>
+      {!confirming ? (
+        <button
+          type="button"
+          onClick={startConfirming}
+          className="mt-3 w-full rounded-[11px_8px_12px_9px] border-[1.5px] border-money-out px-4 py-2.5 text-money-out transition-colors hover:bg-money-out/10"
+        >
+          {t('data.deleteAll')}
+        </button>
+      ) : (
+        <div className="mt-3">
+          <label className="block">
+            <span className="cell-label mb-1 block">{t('data.deleteAllConfirm')}</span>
+            <input
+              type="text"
+              value={word}
+              autoFocus
+              onChange={(e) => setWord(e.target.value)}
+              autoComplete="off"
+              placeholder={required}
+              className="w-full rounded-md border-[1.5px] border-money-out/50 bg-card px-3 py-2 outline-none focus:border-money-out"
+            />
+          </label>
 
-      <button
-        type="button"
-        onClick={() => void handleDelete()}
-        disabled={!armed || busy}
-        className="mt-3 w-full rounded-[11px_8px_12px_9px] bg-money-out px-4 py-2.5 text-white transition-opacity disabled:opacity-40"
-      >
-        {busy ? t('data.deleting') : t('data.deleteAll')}
-      </button>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={cancel}
+              disabled={busy}
+              className="flex-1 rounded-[11px_8px_12px_9px] border-[1.5px] border-ink-faint px-4 py-2.5 transition-colors hover:border-accent"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleDelete()}
+              disabled={!armed || busy}
+              className="flex-1 rounded-[11px_8px_12px_9px] bg-money-out px-4 py-2.5 text-white transition-opacity disabled:opacity-40"
+            >
+              {busy ? t('data.deleting') : t('data.deleteAllConfirmButton')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {done && (
         <p role="status" className="mt-2 text-[0.9rem] text-ink">

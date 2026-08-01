@@ -9,7 +9,9 @@ const THEME_CACHE_KEY = 'mt.theme'
 export function cachedTheme(): ThemeName {
   try {
     const stored = window.localStorage.getItem(THEME_CACHE_KEY)
-    if (stored === 'neutral' || stored === 'warm' || stored === 'cool') return stored
+    if (stored === 'neutral' || stored === 'warm' || stored === 'cool' || stored === 'typewriter') {
+      return stored
+    }
   } catch {
     /* ignore */
   }

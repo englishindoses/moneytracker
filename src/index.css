@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /* Self-hosted so the app works offline and makes no third-party requests.
-   All three are SIL Open Font License.
+   All of them are SIL Open Font License. Each theme picks three of them.
 
    Latin subsets only: the Cyrillic and Vietnamese ranges are dead weight for
    English and Portuguese, and every byte here lands in the PWA precache. */
@@ -10,12 +10,31 @@
 @import '@fontsource/caveat/latin-700.css';
 @import '@fontsource/patrick-hand/latin-400.css';
 @import '@fontsource/architects-daughter/latin-400.css';
+/* Blossom */
+@import '@fontsource/playfair-display/latin-500.css';
+@import '@fontsource/playfair-display/latin-700.css';
+@import '@fontsource/nunito/latin-400.css';
+@import '@fontsource/nunito/latin-700.css';
+/* Blueprint */
+@import '@fontsource/space-mono/latin-400.css';
+@import '@fontsource/space-mono/latin-700.css';
+/* Typewriter */
+@import '@fontsource/special-elite/latin-400.css';
+@import '@fontsource/courier-prime/latin-400.css';
+@import '@fontsource/courier-prime/latin-700.css';
 
 /* ---------------------------------------------------------------------------
-   Themes. Each is a full palette swap; `data-theme` lives on <html> and is
-   restored from the user's profile so it follows them across devices.
+   Themes.
+
+   A theme is not just a palette: it also owns its typefaces, the paper it is
+   printed on, how round the boxes are and how big the body text is. `data-theme`
+   lives on <html> and is restored from the user's profile so it follows them
+   across devices — and because every rule below is scoped to the attribute, the
+   same variables can be re-declared on any element to preview a theme inside
+   another one (which is exactly what the theme picker does).
    --------------------------------------------------------------------------- */
 
+/* Plain paper — handwriting on a dot grid. The original look. */
 :root,
 [data-theme='neutral'] {
   --paper: #faf8f4;
@@ -31,11 +50,30 @@
   --money-in: #3f7a52;
   --money-out: #b23a2f;
   --tape: #e3ddd1;
-  --cover: #6d675e;
-  --cover-2: #514c45;
+  /* The notebook cover (login page only). Deliberately not grey even in the
+     neutral theme — it is the first thing anyone sees. */
+  --cover: #37716a;
+  --cover-2: #1f4a48;
   --doodle-opacity: 0.05;
+
+  --face-hand: 'Caveat', 'Segoe Script', cursive;
+  --face-note: 'Patrick Hand', 'Comic Sans MS', cursive;
+  --face-sketch: 'Architects Daughter', cursive;
+  --face-num: ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --text-base: 17px;
+  --text-line: 1.45;
+
+  /* the dot grid every bullet journal is built on */
+  --paper-image: radial-gradient(var(--rule) 1.1px, transparent 1.2px);
+  --paper-size: 22px 22px;
+  --paper-position: -11px -11px;
+
+  --radius-a: 14px 10px 16px 9px;
+  --radius-b: 12px 16px 9px 14px;
+  --border-w: 1.5px;
 }
 
+/* Blossom — a printed diary: serif headings, soft body, ruled paper. */
 [data-theme='warm'] {
   --paper: #fdf6f3;
   --paper-edge: #f3e2df;
@@ -43,7 +81,7 @@
   --ink: #4a3640;
   --ink-soft: #8b7280;
   --ink-faint: #bda6b0;
-  --rule: #ecd4da;
+  --rule: #ead0d7;
   --accent: #c26e8a;
   --accent-soft: #f7e6ec;
   --accent-2: #8fae86;
@@ -53,16 +91,39 @@
   --cover: #b4657f;
   --cover-2: #8d4a62;
   --doodle-opacity: 0.08;
+
+  --face-hand: 'Playfair Display', Georgia, serif;
+  --face-note: 'Nunito', 'Segoe UI', sans-serif;
+  --face-sketch: 'Nunito', 'Segoe UI', sans-serif;
+  --face-num: 'Nunito', 'Segoe UI', sans-serif;
+  --text-base: 16px;
+  --text-line: 1.5;
+
+  /* ruled lines, like a diary page */
+  --paper-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    var(--rule) 31px,
+    var(--rule) 32px
+  );
+  --paper-size: auto;
+  --paper-position: 0 0;
+
+  --radius-a: 16px;
+  --radius-b: 16px;
+  --border-w: 1px;
 }
 
+/* Blueprint — squared engineering paper, monospaced headings, sharp corners. */
 [data-theme='cool'] {
-  --paper: #f4f6f8;
+  --paper: #f2f5f8;
   --paper-edge: #dfe6ec;
   --card: #fbfcfd;
   --ink: #24303c;
   --ink-soft: #5d6b7a;
   --ink-faint: #97a4b1;
-  --rule: #cdd8e2;
+  --rule: #d5e0ea;
   --accent: #2f5d7c;
   --accent-soft: #e0e9f0;
   --accent-2: #b07d3f;
@@ -72,6 +133,78 @@
   --cover: #2c4a63;
   --cover-2: #1d3346;
   --doodle-opacity: 0.07;
+
+  --face-hand: 'Space Mono', ui-monospace, monospace;
+  --face-note: 'Nunito', 'Segoe UI', sans-serif;
+  --face-sketch: 'Space Mono', ui-monospace, monospace;
+  --face-num: 'Space Mono', ui-monospace, monospace;
+  --text-base: 16px;
+  --text-line: 1.5;
+
+  /* graph paper */
+  --paper-image:
+    repeating-linear-gradient(
+      to right,
+      var(--rule) 0,
+      var(--rule) 1px,
+      transparent 1px,
+      transparent 20px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--rule) 0,
+      var(--rule) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  --paper-size: auto;
+  --paper-position: 0 0;
+
+  --radius-a: 3px;
+  --radius-b: 3px;
+  --border-w: 1px;
+}
+
+/* Typewriter — a carbon-copy ledger: aged paper, elite type, red ink. */
+[data-theme='typewriter'] {
+  --paper: #f6f1e4;
+  --paper-edge: #e6dcc6;
+  --card: #fbf7ee;
+  --ink: #302a22;
+  --ink-soft: #6b5f4e;
+  --ink-faint: #a3947c;
+  --rule: #d8c8a6;
+  --accent: #8a3b2e;
+  --accent-soft: #eee2d0;
+  --accent-2: #6b6142;
+  --money-in: #4a6b3a;
+  --money-out: #a8322a;
+  --tape: #e3d6ba;
+  --cover: #7c4438;
+  --cover-2: #4d281f;
+  --doodle-opacity: 0.06;
+
+  --face-hand: 'Special Elite', 'Courier Prime', monospace;
+  --face-note: 'Courier Prime', ui-monospace, monospace;
+  --face-sketch: 'Special Elite', 'Courier Prime', monospace;
+  --face-num: 'Courier Prime', ui-monospace, monospace;
+  --text-base: 16px;
+  --text-line: 1.55;
+
+  /* ledger rules, a touch wider than the diary's */
+  --paper-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 33px,
+    var(--rule) 33px,
+    var(--rule) 34px
+  );
+  --paper-size: auto;
+  --paper-position: 0 0;
+
+  --radius-a: 2px;
+  --radius-b: 2px;
+  --border-w: 1px;
 }
 
 /* `inline` so the utilities resolve the custom property at use site, which is
@@ -91,9 +224,13 @@
   --color-money-out: var(--money-out);
   --color-tape: var(--tape);
 
-  --font-hand: 'Caveat', 'Segoe Script', cursive;
-  --font-note: 'Patrick Hand', 'Comic Sans MS', cursive;
-  --font-sketch: 'Architects Daughter', cursive;
+  /* Deliberately indirect: `font-hand` resolves to whatever face the nearest
+     data-theme declares, so a theme swap (or a preview card) changes the
+     typeface with no rebuild. The names differ on purpose — a variable cannot
+     be defined in terms of itself. */
+  --font-hand: var(--face-hand);
+  --font-note: var(--face-note);
+  --font-sketch: var(--face-sketch);
 }
 
 /* ---------------------------------------------------------------------------
@@ -110,18 +247,19 @@ body {
   margin: 0;
   color: var(--ink);
   font-family: var(--font-note);
-  font-size: 17px;
-  line-height: 1.45;
+  font-size: var(--text-base);
+  line-height: var(--text-line);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
 }
 
-/* The dot grid every bullet journal is built on. */
+/* The page itself. Named for the dot grid it started as; each theme now decides
+   whether that grid is dots, rules or graph squares. */
 .paper-dots {
   background-color: var(--paper);
-  background-image: radial-gradient(var(--rule) 1.1px, transparent 1.2px);
-  background-size: 22px 22px;
-  background-position: -11px -11px;
+  background-image: var(--paper-image);
+  background-size: var(--paper-size);
+  background-position: var(--paper-position);
 }
 
 .paper-lines {
@@ -135,23 +273,36 @@ body {
   );
 }
 
-/* Numbers get a clean face with fixed-width digits so columns line up, even
-   though everything around them is handwriting. */
+/* Display sizes are written in rem all over the app, but a script face and a
+   typewriter face at the same rem look nothing like the same size. Normalising
+   the x-height means one set of sizes works for every theme. (Browsers without
+   font-size-adjust simply get the nominal sizes.) */
+.font-hand {
+  font-size-adjust: 0.42;
+}
+
+.font-sketch {
+  font-size-adjust: 0.46;
+}
+
+/* Numbers get a fixed-width face so columns line up, whatever the theme's
+   display type is doing. */
 .tabular {
-  font-family: ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  font-family: var(--face-num);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 
-/* Hand-drawn looking frames: slightly uneven radii read as ink, not CSS. */
+/* Frames. The neutral theme's uneven radii read as hand-drawn ink; the other
+   themes override them into something printed. */
 .sketch-box {
-  border: 1.5px solid var(--ink-faint);
-  border-radius: 14px 10px 16px 9px;
+  border: var(--border-w) solid var(--ink-faint);
+  border-radius: var(--radius-a);
 }
 
 .sketch-box-accent {
-  border: 1.5px solid var(--accent);
-  border-radius: 12px 16px 9px 14px;
+  border: var(--border-w) solid var(--accent);
+  border-radius: var(--radius-b);
 }
 
 .tape {

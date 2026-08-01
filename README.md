@@ -16,6 +16,10 @@ and Portuguese (BR).
   the amount received is at least the amount expected. Ticking it fills in the
   full amount; unticking clears it; a partial payment leaves it unticked; editing
   the expected amount re-evaluates it. See `src/lib/totals.ts`.
+- **The recurring list** (Settings → Recurring list) holds the things that repeat
+  every month: a name, a day of the month and an amount. Any month can paste it
+  in — dates land on that month, the 31st clamps to the month's last day, names
+  already in the month are skipped, and everything pasted is an ordinary entry.
 - **Net value = total expected − total due.** Positive is a surplus. Negative
   numbers are red, received and paid amounts are green, everything else is
   default ink.
@@ -77,18 +81,29 @@ In **Settings → Pages**, set Source to **GitHub Actions**.
 | `src/lib/months.ts`      | Month/period helpers                                          |
 | `src/lib/export.ts`      | The `.xlsx` and PDF exports                                   |
 | `src/doodles/`           | Hand-written SVG doodles, no third-party assets                |
-| `src/index.css`          | The three themes, as swappable CSS custom properties           |
+| `src/pages/Recurring.tsx` | The recurring list that months paste in                       |
+| `src/index.css`          | The four themes, as swappable CSS custom properties            |
 | `supabase/schema.sql`    | Schema and RLS — one file, safe to re-run                      |
 
 ## Themes and fonts
 
-Three palettes — **Blossom** (rose/sage/gold, floral doodles), **Slate**
-(navy/ochre, geometric doodles) and **Plain paper** (cream/graphite, minimal).
-Theme and language are stored on your profile, so they follow the account across
-devices. "Stay signed in on this device" is deliberately per-device.
+A theme changes more than the colours: each one brings its own typefaces, paper
+pattern, corner radii and text size.
 
-Fonts are Caveat, Patrick Hand and Architects Daughter, all SIL Open Font
-License, self-hosted so nothing is fetched from a third party at runtime.
+| Theme           | Paper       | Type                                        |
+| --------------- | ----------- | ------------------------------------------- |
+| **Plain paper** | dot grid    | Caveat / Patrick Hand / Architects Daughter |
+| **Blossom**     | ruled lines | Playfair Display / Nunito                   |
+| **Blueprint**   | graph paper | Space Mono / Nunito                         |
+| **Typewriter**  | ledger rules| Special Elite / Courier Prime               |
+
+They are pure CSS custom properties scoped to `[data-theme]` on `<html>`, which
+is also how the theme picker previews each option in its own theme. Theme and
+language are stored on your profile, so they follow the account across devices.
+"Stay signed in on this device" is deliberately per-device.
+
+Every font is SIL Open Font License and self-hosted, so nothing is fetched from
+a third party at runtime.
 
 ## Scripts
 

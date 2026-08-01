@@ -19,9 +19,11 @@ would actually involve.
 
 - **Notes per row** — the `notes` column exists on both tables, likewise unused.
 
-- **Copy from previous month** — recurring items (rent, salary, utilities) get
-  retyped every month. Would copy the previous month's rows into the current one
-  with the received/paid amounts reset to zero.
+- ~~**Copy from previous month**~~ — done differently: instead of copying last
+  month's rows, there is now a **recurring list** (`recurring_items`, Settings →
+  Recurring list) that any month can paste in, with the dates moved onto that
+  month. Copying a specific past month is still possible to add later if the
+  list turns out not to cover it.
 
 - **Delete account** — deliberately dropped for now; only "delete all data" is
   wired up. Deleting an auth user cannot be done from the browser with the
