@@ -64,7 +64,7 @@ function KindSection({ kind }: { kind: RecurringKind }) {
           {t('common.errorLoading')}
         </p>
       )}
-      {items.isLoading && <p className="py-4 text-center text-ink-faint">{t('common.loading')}</p>}
+      {items.isLoading && <p className="py-4 text-center text-ink-soft">{t('common.loading')}</p>}
 
       <ul className="space-y-1">
         {rows.map((item) => (
@@ -78,7 +78,7 @@ function KindSection({ kind }: { kind: RecurringKind }) {
       </ul>
 
       {!items.isLoading && rows.length === 0 && (
-        <p className="py-4 text-center text-ink-faint">{t('recurring.empty')}</p>
+        <p className="py-4 text-center text-ink-soft">{t('recurring.empty')}</p>
       )}
 
       <button

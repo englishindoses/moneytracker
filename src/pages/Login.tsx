@@ -1,12 +1,14 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../lib/auth'
+import { useSettings } from '../lib/settings'
 import { Coin, Flower, Piggy, Sparkle, Star, WashiTape } from '../doodles/Doodles'
 
 type Mode = 'signIn' | 'signUp'
 
-/** Stitch holes down the spine, spaced evenly however tall the screen is. */
-const BINDING = [0, 1, 2, 3, 4, 5, 6, 7]
+const COVER_GRADIENT =
+  'linear-gradient(150deg, color-mix(in srgb, var(--cover) 82%, white) 0%, ' +
+  'var(--cover) 42%, var(--cover-2) 100%)'
 
 const inputClass =
   'font-note w-full rounded-[8px_11px_7px_10px] border-[1.5px] border-rule bg-card px-3 py-2.5 ' +
@@ -17,10 +19,15 @@ const inputClass =
  * than a card floating on a background. On a successful sign-in the cover swings
  * open on its spine (rotateY) and the page underneath is revealed, then the app
  * mounts.
+ *
+ * The Clean theme has no notebook: it gets the same swing, but off a flat panel.
  */
 export function Login() {
   const { t } = useTranslation()
   const { signIn, signUp, resetPassword } = useAuth()
+  const { theme } = useSettings()
+
+  const bound = theme !== 'plain'
 
   const [mode, setMode] = useState<Mode>('signIn')
   const [email, setEmail] = useState('')
@@ -29,6 +36,30 @@ export function Login() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [opening, setOpening] = useState(false)
+
+  /**
+   * "Full page" on a phone means more than a full-height <div>: the strip the
+   * browser paints when you overscroll, and the status bar in the installed app,
+   * both come from <html> and the theme-color meta. Both are cream by default,
+   * which left the cover looking like a panel with a border. Repaint them in the
+   * cover colour for as long as this screen is up, and put them back after.
+   */
+  useEffect(() => {
+    const html = document.documentElement
+    const previousBackground = html.style.background
+    const cover = getComputedStyle(html).getPropertyValue('--cover-2').trim()
+
+    html.style.background = cover
+
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    const previousThemeColor = meta?.content
+    if (meta && cover) meta.content = cover
+
+    return () => {
+      html.style.background = previousBackground
+      if (meta && previousThemeColor !== undefined) meta.content = previousThemeColor
+    }
+  }, [theme])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -94,87 +125,45 @@ export function Login() {
         >
           {/* ---- the cover itself, filling the whole viewport ---- */}
           <div
-            className="relative grid min-h-dvh place-items-center overflow-hidden px-5 py-10 pl-14 sm:pl-20"
-            style={{
-              background: 'linear-gradient(140deg, var(--cover) 0%, var(--cover-2) 100%)',
-            }}
+            className={`relative grid min-h-dvh place-items-center overflow-hidden px-5 py-10 ${
+              bound ? 'pl-16 sm:pl-24' : ''
+            }`}
+            style={{ background: COVER_GRADIENT }}
           >
-            {/* spine: a darker band down the full height, with binding holes */}
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 left-0 w-9 sm:w-14"
-              style={{ background: 'rgb(0 0 0 / 0.24)' }}
-            />
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 left-9 w-px sm:left-14"
-              style={{ background: 'rgb(255 255 255 / 0.18)' }}
-            />
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-8 left-[18px] flex w-0 flex-col justify-between sm:left-7"
-            >
-              {BINDING.map((i) => (
-                <span
-                  key={i}
-                  className="-ml-[5px] h-[10px] w-[10px] rounded-full"
-                  style={{
-                    background: 'rgb(0 0 0 / 0.35)',
-                    boxShadow: 'inset 0 1px 1px rgb(255 255 255 / 0.25)',
-                  }}
-                />
-              ))}
-            </span>
-
-            {/* stitched edge, like a bound cover */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-4 rounded-[10px] border border-dashed border-white/20 sm:inset-6"
-            />
-
-            {/* elastic closure down the right edge */}
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 right-6 w-[8px] sm:right-10"
-              style={{ background: 'rgb(0 0 0 / 0.28)' }}
-            />
-
-            {/* cover doodles, embossed rather than drawn */}
-            <Flower
-              aria-hidden="true"
-              className="pointer-events-none absolute -right-6 top-6 h-40 w-40 rotate-12 text-white/10"
-            />
-            <Piggy
-              aria-hidden="true"
-              className="pointer-events-none absolute -left-2 bottom-10 h-32 w-32 -rotate-6 text-white/10 sm:left-20"
-            />
-            <Coin
-              aria-hidden="true"
-              className="pointer-events-none absolute right-24 bottom-16 h-20 w-20 -rotate-12 text-white/10"
-            />
-            <Sparkle
-              aria-hidden="true"
-              className="pointer-events-none absolute left-1/3 top-10 hidden h-12 w-12 text-white/10 sm:block"
-            />
+            {bound && <CoverChrome />}
 
             {/* ---- the label: a page taped to the cover ---- */}
             <form
               onSubmit={handleSubmit}
-              className="paper-lines relative z-10 w-full max-w-[400px] -rotate-[0.6deg] rounded-[10px_16px_9px_14px] px-6 pb-7 pt-9 shadow-[0_22px_45px_-14px_rgba(0,0,0,0.55)]"
+              className={`relative z-10 w-full max-w-[400px] px-6 pb-7 pt-9 ${
+                bound
+                  ? 'paper-lines -rotate-[0.6deg] rounded-[10px_16px_9px_14px] shadow-[0_26px_50px_-16px_rgba(0,0,0,0.6)]'
+                  : 'bg-card rounded-[16px] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.45)]'
+              }`}
             >
-              <WashiTape
-                aria-hidden="true"
-                className="absolute -left-6 -top-4 h-8 w-32 -rotate-12 text-tape"
-              />
-              <WashiTape
-                aria-hidden="true"
-                className="absolute -right-6 -bottom-4 h-8 w-32 -rotate-12 text-tape"
-              />
+              {bound && (
+                <>
+                  <WashiTape
+                    aria-hidden="true"
+                    className="absolute -left-6 -top-4 h-8 w-32 -rotate-12 text-tape"
+                  />
+                  <WashiTape
+                    aria-hidden="true"
+                    className="absolute -right-6 -bottom-4 h-8 w-32 -rotate-12 text-tape"
+                  />
+                </>
+              )}
 
               <div className="relative mb-6 text-center">
-                <Star aria-hidden="true" className="absolute -left-1 -top-4 h-7 w-7 text-accent" />
-                <h1 className="font-hand text-[2.4rem] leading-none text-ink">{t('app.name')}</h1>
-                <p className="font-sketch mt-1 text-[0.8rem] tracking-wide text-ink-soft">
+                {bound && (
+                  <Star aria-hidden="true" className="absolute -left-1 -top-4 h-7 w-7 text-accent" />
+                )}
+                {/* The display faces vary a lot in width, so the title is sized
+                    for the narrowest phone and only grows once there is room. */}
+                <h1 className="font-hand break-words text-[2.1rem] leading-tight text-ink sm:text-[2.5rem]">
+                  {t('app.name')}
+                </h1>
+                <p className="font-sketch mt-1 break-words text-[0.85rem] tracking-wide text-ink-soft">
                   {t('app.tagline')}
                 </p>
               </div>
@@ -204,19 +193,19 @@ export function Login() {
                     className={inputClass}
                   />
                   {mode === 'signUp' && (
-                    <span className="mt-1 block text-[0.78rem] text-ink-faint">
+                    <span className="mt-1 block text-[0.82rem] text-ink-soft">
                       {t('auth.passwordHint')}
                     </span>
                   )}
                 </label>
 
                 {error && (
-                  <p role="alert" className="text-[0.9rem] text-money-out">
+                  <p role="alert" className="text-[0.92rem] text-money-out">
                     {error}
                   </p>
                 )}
                 {notice && (
-                  <p role="status" className="text-[0.9rem] text-ink">
+                  <p role="status" className="text-[0.92rem] text-ink">
                     {notice}
                   </p>
                 )}
@@ -224,7 +213,9 @@ export function Login() {
                 <button
                   type="submit"
                   disabled={busy || opening}
-                  className="font-hand mt-1 w-full rounded-[11px_14px_9px_13px] px-4 py-2.5 text-[1.5rem] leading-none text-paper shadow-md transition-transform active:scale-[0.98] disabled:opacity-70"
+                  className={`font-hand mt-1 w-full break-words px-4 py-2.5 text-[1.45rem] leading-tight text-white shadow-md transition-transform active:scale-[0.98] disabled:opacity-70 sm:text-[1.6rem] ${
+                    bound ? 'rounded-[11px_14px_9px_13px]' : 'rounded-[12px]'
+                  }`}
                   style={{
                     background: 'linear-gradient(140deg, var(--cover) 0%, var(--cover-2) 100%)',
                   }}
@@ -238,7 +229,7 @@ export function Login() {
                       : t('auth.signIn')}
                 </button>
 
-                <div className="flex items-center justify-between pt-1 text-[0.85rem] text-ink-soft">
+                <div className="flex items-center justify-between pt-1 text-[0.88rem] text-ink-soft">
                   <button
                     type="button"
                     onClick={() => {
@@ -246,7 +237,7 @@ export function Login() {
                       setError(null)
                       setNotice(null)
                     }}
-                    className="underline decoration-ink-faint underline-offset-4"
+                    className="underline decoration-ink-faint underline-offset-4 hover:text-ink"
                   >
                     {mode === 'signIn' ? t('auth.toSignUp') : t('auth.toSignIn')}
                   </button>
@@ -254,7 +245,7 @@ export function Login() {
                     <button
                       type="button"
                       onClick={handleReset}
-                      className="underline decoration-ink-faint underline-offset-4"
+                      className="underline decoration-ink-faint underline-offset-4 hover:text-ink"
                     >
                       {t('auth.forgot')}
                     </button>
@@ -266,5 +257,107 @@ export function Login() {
         </div>
       </div>
     </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Everything that makes the cover read as a bound hardback rather than a
+ * coloured rectangle: woven cloth, a lit top-left corner, a contrasting spine
+ * with stitching, a foil-stamped double frame and the elastic closure.
+ *
+ * All of it is decoration drawn from `--cover-trim`, so a theme swap restyles
+ * the binding along with everything else.
+ */
+function CoverChrome() {
+  return (
+    <>
+      {/* bookcloth weave */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(45deg, rgb(255 255 255 / 0.055) 0 1px, transparent 1px 5px),' +
+            'repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.055) 0 1px, transparent 1px 5px)',
+        }}
+      />
+
+      {/* light falling across it from the top-left, dark into the far corners */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(120% 80% at 22% 6%, rgb(255 255 255 / 0.24) 0%, transparent 55%),' +
+            'radial-gradient(135% 105% at 55% 100%, transparent 45%, rgb(0 0 0 / 0.40) 100%)',
+        }}
+      />
+
+      {/* ---- the spine ---- */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-11 sm:w-[4.5rem]"
+        style={{
+          background:
+            'linear-gradient(to right, rgb(0 0 0 / 0.34) 0%, rgb(0 0 0 / 0.10) 55%, rgb(255 255 255 / 0.07) 100%)',
+        }}
+      />
+      {/* foil rules either side of the stitching */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-[6px] w-px bg-cover-trim/35 sm:left-2"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-11 w-px bg-cover-trim/45 sm:left-[4.5rem]"
+      />
+      {/* hand stitching down the fold */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-8 left-[22px] border-l-2 border-dashed border-cover-trim/55 sm:left-9"
+      />
+
+      {/* ---- foil-stamped double frame, starting clear of the spine ---- */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-4 left-[3.75rem] right-4 rounded-[6px] border border-cover-trim/45 sm:inset-y-7 sm:left-[5.75rem] sm:right-7"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-[22px] left-[4.15rem] right-[26px] rounded-[4px] border border-cover-trim/20 sm:inset-y-9 sm:left-[6.25rem] sm:right-9"
+      />
+
+      {/* ---- the elastic closure ---- */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 right-6 w-[9px] sm:right-11 sm:w-[11px]"
+        style={{
+          background:
+            'linear-gradient(to right, rgb(255 255 255 / 0.08) 0%, rgb(0 0 0 / 0.45) 30%, ' +
+            'rgb(0 0 0 / 0.45) 70%, rgb(255 255 255 / 0.10) 100%)',
+          boxShadow: '0 0 12px rgb(0 0 0 / 0.35)',
+        }}
+      />
+
+      {/* ---- blind-embossed doodles ---- */}
+      <Flower
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-6 top-8 h-40 w-40 rotate-12 text-cover-trim/20"
+      />
+      <Piggy
+        aria-hidden="true"
+        className="pointer-events-none absolute left-16 bottom-10 h-32 w-32 -rotate-6 text-cover-trim/20 sm:left-28"
+      />
+      <Coin
+        aria-hidden="true"
+        className="pointer-events-none absolute right-24 bottom-20 h-20 w-20 -rotate-12 text-cover-trim/20"
+      />
+      <Sparkle
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/3 top-12 hidden h-12 w-12 text-cover-trim/25 sm:block"
+      />
+    </>
   )
 }

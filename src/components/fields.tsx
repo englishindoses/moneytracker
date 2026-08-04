@@ -123,7 +123,7 @@ export function DateInput({ value, onCommit, label, className = '' }: DateInputP
       aria-label={label}
       value={value ?? ''}
       onChange={(e) => onCommit(e.target.value || null)}
-      className={`tabular w-full rounded-md bg-transparent px-2 py-1.5 text-[14px] text-ink-soft outline-none focus:bg-accent-soft ${className}`}
+      className={`tabular w-full rounded-md bg-transparent px-2 py-1.5 text-[15px] text-ink-soft outline-none focus:bg-accent-soft ${className}`}
     />
   )
 }

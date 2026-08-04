@@ -134,12 +134,23 @@ export function Sparkle(props: D) {
   )
 }
 
+/**
+ * The ribbon behind a page title. Unlike the other doodles this one is *sized by
+ * its content*: it stretches to whatever box it is given (`preserveAspectRatio`
+ * off) so a long month name never outgrows it. `vector-effect` keeps the outline
+ * an even weight while the shape is being stretched.
+ */
 export function Banner(props: D) {
   return (
-    <svg viewBox="0 0 160 40" aria-hidden="true" {...props}>
-      <g {...stroke}>
-        <path d="M14 8h132l-10 12 10 12H14l10-12z" />
-      </g>
+    <svg viewBox="0 0 160 40" preserveAspectRatio="none" aria-hidden="true" {...props}>
+      <path
+        d="M3 4h154l-12 16 12 16H3l12-16z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   )
 }

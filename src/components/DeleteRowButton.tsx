@@ -35,7 +35,7 @@ export function DeleteRowButton({ onConfirm, name }: DeleteRowButtonProps) {
       onClick={handleClick}
       aria-label={name ? `${t('common.deleteRow')}: ${name}` : t('common.deleteRow')}
       className={`grid h-8 w-8 place-items-center rounded-md transition-colors ${
-        armed ? 'bg-money-out/15 text-money-out' : 'text-ink-faint hover:text-money-out'
+        armed ? 'bg-money-out/15 text-money-out' : 'text-ink-soft hover:text-money-out'
       }`}
     >
       {armed ? (

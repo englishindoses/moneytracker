@@ -6,12 +6,18 @@ import { useAuth } from './auth'
 
 const THEME_CACHE_KEY = 'mt.theme'
 
+/** The whole set, in the order the picker shows them. Also the guard for
+ *  anything coming back from localStorage or the profile row. */
+export const THEMES: ThemeName[] = ['neutral', 'warm', 'cool', 'typewriter', 'plain']
+
+function isTheme(value: unknown): value is ThemeName {
+  return THEMES.includes(value as ThemeName)
+}
+
 export function cachedTheme(): ThemeName {
   try {
     const stored = window.localStorage.getItem(THEME_CACHE_KEY)
-    if (stored === 'neutral' || stored === 'warm' || stored === 'cool' || stored === 'typewriter') {
-      return stored
-    }
+    if (isTheme(stored)) return stored
   } catch {
     /* ignore */
   }
@@ -62,7 +68,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       .fetchProfile(userId)
       .then((profile) => {
         if (!active || !profile) return
-        setThemeState(profile.theme)
+        if (isTheme(profile.theme)) setThemeState(profile.theme)
         setLanguageState(profile.language)
       })
       .catch(() => {

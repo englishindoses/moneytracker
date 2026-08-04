@@ -86,6 +86,8 @@ export const en = {
     neutralHint: 'Dot grid, handwriting, cream & graphite.',
     typewriter: 'Typewriter',
     typewriterHint: 'Aged ledger paper, elite type, red ink.',
+    plain: 'Clean',
+    plainHint: 'No paper, no doodles — flat white cards and one plain typeface.',
     use: 'use this',
     inUse: 'in use',
   },

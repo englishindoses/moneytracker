@@ -87,6 +87,8 @@ export const pt: typeof en = {
     neutralHint: 'Pontilhado, letra à mão, creme e grafite.',
     typewriter: 'Máquina de escrever',
     typewriterHint: 'Papel envelhecido, tipo datilografado, tinta vermelha.',
+    plain: 'Limpo',
+    plainHint: 'Sem papel nem rabiscos — cartões brancos e uma só fonte simples.',
     use: 'usar',
     inUse: 'em uso',
   },

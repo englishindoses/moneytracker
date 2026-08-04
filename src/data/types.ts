@@ -1,4 +1,4 @@
-export type ThemeName = 'neutral' | 'warm' | 'cool' | 'typewriter'
+export type ThemeName = 'neutral' | 'warm' | 'cool' | 'typewriter' | 'plain'
 export type LanguageCode = 'en-GB' | 'pt-BR'
 
 export interface Profile {

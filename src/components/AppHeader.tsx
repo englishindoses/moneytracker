@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Banner } from '../doodles/Doodles'
 import { PageDecor } from '../doodles/PageDecor'
+import { useSettings } from '../lib/settings'
 
 interface AppHeaderProps {
   title: string
@@ -12,6 +13,10 @@ interface AppHeaderProps {
 
 export function AppHeader({ title, backTo, backLabel }: AppHeaderProps) {
   const { t } = useTranslation()
+  const { theme } = useSettings()
+
+  // The ribbon is a stationery flourish, so the Clean theme goes without it.
+  const ribbon = theme !== 'plain'
 
   return (
     <>
@@ -27,7 +32,7 @@ export function AppHeader({ title, backTo, backLabel }: AppHeaderProps) {
               {backLabel}
             </Link>
           ) : (
-            <span className="font-sketch px-1 py-1 text-[0.9rem] text-ink-faint">
+            <span className="font-sketch px-1 py-1 text-[0.9rem] text-ink-soft">
               {t('app.tagline')}
             </span>
           )}
@@ -52,14 +57,22 @@ export function AppHeader({ title, backTo, backLabel }: AppHeaderProps) {
           </Link>
         </div>
 
-        <div className="relative mt-1 text-center">
-          <Banner
-            aria-hidden="true"
-            className="mx-auto h-11 w-[min(320px,88%)] text-ink-faint"
-          />
-          <h1 className="font-hand absolute inset-0 grid place-items-center pb-1 text-[1.9rem] capitalize leading-none">
-            {title}
-          </h1>
+        {/* The ribbon is drawn *around* the title rather than behind a fixed-width
+            box, so it grows with the word inside it — "Dezembro de 2026" gets a
+            wider banner than "Julho" instead of overflowing a 320px one. */}
+        <div className="mt-1 flex justify-center">
+          <div
+            className={`relative inline-block max-w-full py-2.5 ${
+              ribbon ? 'px-8 sm:px-11' : 'px-2'
+            }`}
+          >
+            {ribbon && (
+              <Banner aria-hidden="true" className="absolute inset-0 h-full w-full text-ink-faint" />
+            )}
+            <h1 className="font-hand relative break-words text-center text-[1.8rem] capitalize leading-tight sm:text-[2.1rem]">
+              {title}
+            </h1>
+          </div>
         </div>
       </header>
     </>

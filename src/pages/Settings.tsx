@@ -5,15 +5,13 @@ import { Link } from 'react-router-dom'
 import { AppHeader } from '../components/AppHeader'
 import { useExpensesRange, useIncomeRange } from '../data/hooks'
 import * as repo from '../data/repository'
-import type { LanguageCode, ThemeName } from '../data/types'
+import type { LanguageCode } from '../data/types'
 import { LANGUAGES } from '../i18n'
 import { useAuth } from '../lib/auth'
 import { buildExportTables, downloadPdf, downloadXlsx, type ExportLabels } from '../lib/export'
 import { currentPeriod, monthAndYear, monthsOfYear, currentYear, periodRange } from '../lib/months'
 import { getStaySignedIn, migrateSessionStorage, setStaySignedIn } from '../lib/supabase'
-import { useSettings } from '../lib/settings'
-
-const THEMES: ThemeName[] = ['neutral', 'warm', 'cool', 'typewriter']
+import { THEMES, useSettings } from '../lib/settings'
 
 export function Settings() {
   const { t } = useTranslation()
@@ -46,7 +44,7 @@ function Section({
   return (
     <section className="sketch-box bg-card px-4 py-4 shadow-sm">
       <h2 className="font-hand text-[1.7rem] leading-none">{title}</h2>
-      {hint && <p className="font-sketch mt-1 text-[0.75rem] text-ink-faint">{hint}</p>}
+      {hint && <p className="font-sketch mt-1 text-[0.82rem] text-ink-soft">{hint}</p>}
       <div className="mt-3">{children}</div>
     </section>
   )
@@ -119,7 +117,7 @@ function ThemeSection() {
                 <Chip varName="--accent-2" />
                 <Chip varName="--money-in" />
                 <Chip varName="--money-out" />
-                <span className="font-sketch ml-auto whitespace-nowrap text-[0.68rem] uppercase tracking-wide text-ink-faint">
+                <span className="font-sketch ml-auto whitespace-nowrap text-[0.74rem] font-semibold uppercase tracking-wide text-ink-soft">
                   {theme === name ? t('themes.inUse') : t('themes.use')}
                 </span>
               </span>
@@ -151,7 +149,7 @@ function RecurringSection() {
         className="flex items-center justify-between gap-3 rounded-[11px_8px_12px_9px] border-[1.5px] border-ink-faint px-4 py-2.5 transition-colors hover:border-accent"
       >
         {t('recurring.open')}
-        <span aria-hidden="true" className="text-xl text-ink-faint">
+        <span aria-hidden="true" className="text-xl text-ink-soft">
           ›
         </span>
       </Link>
@@ -187,7 +185,7 @@ function AccountSection() {
         />
         <span>
           <span className="block">{t('account.staySignedIn')}</span>
-          <span className="font-sketch block text-[0.75rem] leading-snug text-ink-faint">
+          <span className="font-sketch block text-[0.82rem] leading-snug text-ink-soft">
             {t('account.staySignedInHint')}
           </span>
         </span>
@@ -272,7 +270,7 @@ function DataSection() {
 
   return (
     <Section title={t('settings.data')}>
-      <h3 className="font-sketch mb-2 text-[0.8rem] uppercase tracking-widest text-ink-faint">
+      <h3 className="font-sketch mb-2 text-[0.82rem] font-semibold uppercase tracking-widest text-ink-soft">
         {t('data.exportTitle')}
       </h3>
 
@@ -288,12 +286,12 @@ function DataSection() {
       </div>
 
       <div className="mt-3">
-        <h4 className="font-sketch mb-1 text-[0.8rem] uppercase tracking-widest text-ink-faint">
+        <h4 className="font-sketch mb-1 text-[0.82rem] font-semibold uppercase tracking-widest text-ink-soft">
           {t('data.preview')} · {tables.rowCount} {t('data.rows')}
         </h4>
 
         {tables.rowCount === 0 ? (
-          <p className="py-3 text-ink-faint">{t('data.nothingToExport')}</p>
+          <p className="py-3 text-ink-soft">{t('data.nothingToExport')}</p>
         ) : (
           <div className="max-h-72 overflow-auto rounded-md border border-rule">
             <PreviewTable caption={labels.income} table={tables.income} />
@@ -448,7 +446,7 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
       <h3 className="font-hand text-[1.4rem] leading-none text-money-out">
         {t('data.dangerTitle')}
       </h3>
-      <p className="font-sketch mt-1 text-[0.78rem] leading-snug text-ink-soft">
+      <p className="font-sketch mt-1 text-[0.85rem] leading-snug text-ink-soft">
         {t('data.deleteAllHint')}
       </p>
 

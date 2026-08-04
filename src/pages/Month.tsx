@@ -70,7 +70,7 @@ export function Month() {
         {/* --- month summary ------------------------------------------------ */}
         <section
           aria-label={t('totals.net')}
-          className="sketch-box mb-4 grid grid-cols-3 gap-1 bg-card px-2 py-3 shadow-sm"
+          className="sketch-box mb-4 grid grid-cols-1 gap-1 bg-card px-3 py-2.5 shadow-sm sm:grid-cols-3 sm:px-2 sm:py-3"
         >
           <Figure label={t('totals.totalExpected')} value={totals.expected} />
           <Figure label={t('totals.totalDue')} value={totals.due} />
@@ -96,7 +96,7 @@ export function Month() {
             {t('common.errorLoading')}
           </p>
         )}
-        {loading && <p className="py-6 text-center text-ink-faint">{t('common.loading')}</p>}
+        {loading && <p className="py-6 text-center text-ink-soft">{t('common.loading')}</p>}
 
         {/* --- income ------------------------------------------------------- */}
         {tab === 'income' && !loading && (
@@ -126,7 +126,7 @@ export function Month() {
             </ul>
 
             {(income.data ?? []).length === 0 && (
-              <p className="py-6 text-center text-ink-faint">{t('common.emptyIncome')}</p>
+              <p className="py-6 text-center text-ink-soft">{t('common.emptyIncome')}</p>
             )}
 
             <AddButton
@@ -177,7 +177,7 @@ export function Month() {
             </ul>
 
             {(expenses.data ?? []).length === 0 && (
-              <p className="py-6 text-center text-ink-faint">{t('common.emptyExpenses')}</p>
+              <p className="py-6 text-center text-ink-soft">{t('common.emptyExpenses')}</p>
             )}
 
             <AddButton
@@ -221,7 +221,10 @@ function Figure({
   emphasis?: boolean
 }) {
   return (
-    <div className="px-1 text-center">
+    // Three columns only once there is room for them. Squeezed into a third of a
+    // phone, "R$ 8.420,00" wraps mid-number in the wider faces — as a label/value
+    // row it stays on one line *and* keeps its full size.
+    <div className="flex min-w-0 items-baseline justify-between gap-3 py-0.5 sm:block sm:px-1 sm:text-center">
       <span className="cell-label block">{label}</span>
       <span
         className={`tabular block leading-tight ${moneyClass(value)} ${
@@ -256,7 +259,7 @@ function TabButton({
       id={id}
       aria-selected={active}
       onClick={onClick}
-      className={`font-hand flex-1 rounded-[12px_9px_13px_8px] border-[1.5px] px-4 py-2 text-[1.5rem] leading-none transition-colors ${
+      className={`font-hand min-w-0 flex-1 break-words rounded-[12px_9px_13px_8px] border-[1.5px] px-3 py-2 text-[1.3rem] leading-tight transition-colors sm:px-4 sm:text-[1.5rem] ${
         active
           ? 'border-accent bg-accent-soft text-ink'
           : 'border-ink-faint bg-card text-ink-soft hover:text-ink'

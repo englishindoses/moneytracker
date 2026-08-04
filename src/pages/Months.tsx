@@ -79,7 +79,7 @@ export function Months() {
                     <span className="font-hand block text-[1.7rem] capitalize leading-none">
                       {monthName(period, language)}
                     </span>
-                    <span className="font-sketch mt-1 block text-[0.78rem] text-ink-faint">
+                    <span className="font-sketch mt-1 block text-[0.85rem] text-ink-soft">
                       {loading
                         ? t('common.loading')
                         : summary && summary.rows > 0
@@ -90,7 +90,7 @@ export function Months() {
                       )}
                     </span>
                   </span>
-                  <span aria-hidden="true" className="text-xl text-ink-faint">
+                  <span aria-hidden="true" className="text-xl text-ink-soft">
                     ›
                   </span>
                 </Link>

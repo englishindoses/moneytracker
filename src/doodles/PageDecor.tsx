@@ -25,6 +25,10 @@ import {
 export function PageDecor() {
   const { theme } = useSettings()
 
+  // The Clean theme is defined by the absence of this layer, so skip it outright
+  // rather than rendering five invisible SVGs at zero opacity.
+  if (theme === 'plain') return null
+
   const set =
     theme === 'warm'
       ? { a: LeafSprig, b: Flower, c: Berries, d: Star }
