@@ -66,6 +66,7 @@ export const pt: typeof en = {
     totalExpected: 'Total previsto',
     totalDue: 'Total a pagar',
     net: 'Saldo',
+    selectedTotal: 'Total selecionado',
   },
   settings: {
     title: 'Configurações',
@@ -149,6 +150,9 @@ export const pt: typeof en = {
     offline: 'Você está offline — as alterações não serão salvas.',
     deleteRow: 'Excluir linha',
     datePlaceholder: 'dd/mm/aaaa',
+    select: 'Selecionar',
+    selectAll: 'Selecionar tudo',
+    clearSelection: 'Limpar',
     emptyIncome: 'Nenhuma receita lançada neste mês.',
     emptyExpenses: 'Nenhuma despesa lançada neste mês.',
     total: 'Total',

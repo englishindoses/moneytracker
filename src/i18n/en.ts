@@ -65,6 +65,7 @@ export const en = {
     totalExpected: 'Total expected',
     totalDue: 'Total due',
     net: 'Net value',
+    selectedTotal: 'Selected total',
   },
   settings: {
     title: 'Settings',
@@ -148,6 +149,9 @@ export const en = {
     offline: 'You are offline — changes will not be saved.',
     deleteRow: 'Delete row',
     datePlaceholder: 'dd/mm/yyyy',
+    select: 'Select',
+    selectAll: 'Select all',
+    clearSelection: 'Clear',
     emptyIncome: 'No income logged for this month yet.',
     emptyExpenses: 'No expenses logged for this month yet.',
     total: 'Total',

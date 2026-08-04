@@ -392,10 +392,12 @@ body {
 .row-expense {
   align-items: center;
   gap: 2px 8px;
-  /* Fixed widths for the tick and amount columns: an <input> contributes a
-     ~20-character intrinsic width to an `auto` track, which would starve the
-     name and date of space. */
-  grid-template-columns: minmax(0, 1fr) 2.75rem 6.75rem;
+  /* Fixed widths for the select, tick and amount columns: an <input> contributes
+     a ~20-character intrinsic width to an `auto` track, which would starve the
+     name and date of space. The `sel` column is a full-height gutter down the
+     left of the row, so the checkbox reads as belonging to the whole entry
+     rather than to the line it happens to sit on. */
+  grid-template-columns: 1.5rem minmax(0, 1fr) 2.5rem 6.25rem;
 }
 
 /* Form controls default to an intrinsic min-width that refuses to shrink,
@@ -416,29 +418,29 @@ body {
 
 .row-income {
   grid-template-areas:
-    'name tick del'
-    'date date expected'
-    'rdate rdate received';
+    'sel name tick del'
+    'sel date date expected'
+    'sel rdate rdate received';
 }
 
 .row-expense {
   grid-template-areas:
-    'name tick del'
-    'date date due'
-    'paid paid paid';
+    'sel name tick del'
+    'sel date date due'
+    'sel paid paid paid';
 }
 
 /* The date columns carry a calendar button as well as dd/mm/yyyy, so they are
    wider than the amount columns beside them. */
 @media (min-width: 700px) {
   .row-income {
-    grid-template-columns: minmax(0, 1.6fr) 8.25rem 7rem 7rem 2.75rem 8.25rem 2rem;
-    grid-template-areas: 'name date expected received tick rdate del';
+    grid-template-columns: 1.75rem minmax(0, 1.6fr) 8rem 6.75rem 6.75rem 2.75rem 8rem 2rem;
+    grid-template-areas: 'sel name date expected received tick rdate del';
   }
 
   .row-expense {
-    grid-template-columns: minmax(0, 1.8fr) 8.25rem 7.5rem 7.5rem 2.75rem 2rem;
-    grid-template-areas: 'name date due paid tick del';
+    grid-template-columns: 1.75rem minmax(0, 1.8fr) 8rem 7.5rem 7.5rem 2.75rem 2rem;
+    grid-template-areas: 'sel name date due paid tick del';
   }
 }
 

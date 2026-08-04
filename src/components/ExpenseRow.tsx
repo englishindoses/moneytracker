@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { DateInput, MoneyInput, TextInput, TickBox } from './fields'
+import { DateInput, MoneyInput, SelectBox, TextInput, TickBox } from './fields'
 import { DeleteRowButton } from './DeleteRowButton'
 import type { ExpenseEntry, ExpensePatch } from '../data/types'
 import { isExpensePaid } from '../lib/totals'
@@ -8,13 +8,22 @@ interface ExpenseRowProps {
   entry: ExpenseEntry
   onPatch: (patch: ExpensePatch) => void
   onDelete: () => void
+  /** Picked out for the selected total at the foot of the month. */
+  selected: boolean
+  onSelectedChange: (selected: boolean) => void
 }
 
 const LABEL = 'cell-label min-[700px]:hidden'
 
 /** Mirrors IncomeRow exactly, as specified — same tick behaviour, same layout
  *  rules, minus the "received on" column. */
-export function ExpenseRow({ entry, onPatch, onDelete }: ExpenseRowProps) {
+export function ExpenseRow({
+  entry,
+  onPatch,
+  onDelete,
+  selected,
+  onSelectedChange,
+}: ExpenseRowProps) {
   const { t } = useTranslation()
   const paid = isExpensePaid(entry)
 
@@ -43,7 +52,22 @@ export function ExpenseRow({ entry, onPatch, onDelete }: ExpenseRowProps) {
   }
 
   return (
-    <li className="row-expense sketch-box grid overflow-hidden bg-card px-2 py-2 shadow-sm">
+    <li
+      className={`row-expense sketch-box grid overflow-hidden px-2 py-2 shadow-sm transition-colors ${
+        selected ? 'bg-accent-soft' : 'bg-card'
+      }`}
+    >
+      {/* Top-aligned while the row is three lines tall, so the box reads as
+          belonging to the entry rather than to the date line it would
+          otherwise sit beside. */}
+      <div className="flex items-start justify-center self-start [grid-area:sel] min-[700px]:items-center min-[700px]:self-center">
+        <SelectBox
+          checked={selected}
+          onChange={onSelectedChange}
+          label={`${t('common.select')}: ${entry.name || t('expenses.newExpense')}`}
+        />
+      </div>
+
       <div className="[grid-area:name] min-w-0">
         <TextInput
           value={entry.name}

@@ -1,4 +1,11 @@
-import { useState, type ChangeEvent, type FocusEvent, type KeyboardEvent } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FocusEvent,
+  type KeyboardEvent,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatAmount, formatDate, parseAmount, parseDate } from '../lib/format'
 
@@ -189,6 +196,65 @@ export function DateInput({ value, onCommit, label, className = '' }: DateInputP
         />
       </span>
     </span>
+  )
+}
+
+/* --------------------------------------------------------------------------
+   The selection box
+   -------------------------------------------------------------------------- */
+
+interface SelectBoxProps {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label: string
+  /** Some-but-not-all, for the select-all box in the column header. */
+  indeterminate?: boolean
+}
+
+/**
+ * Picks rows out for the "selected total" at the foot of the month. Kept
+ * deliberately unlike TickBox sitting a few columns away — a filled accent
+ * square rather than an outlined hand-drawn one — because the two mean entirely
+ * different things: this one is a view of your own data, that one edits it.
+ */
+export function SelectBox({ checked, onChange, label, indeterminate = false }: SelectBoxProps) {
+  const ref = useRef<HTMLInputElement>(null)
+
+  // `indeterminate` is a DOM property with no HTML attribute, so it can only be
+  // set imperatively.
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = indeterminate && !checked
+  }, [indeterminate, checked])
+
+  const marked = checked || indeterminate
+
+  return (
+    <label className="inline-flex cursor-pointer items-center justify-center p-1.5">
+      <input
+        ref={ref}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        aria-label={label}
+        className="peer sr-only"
+      />
+      <span
+        className={`grid h-5 w-5 place-items-center rounded-[5px] border-[1.5px] transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent ${
+          marked ? 'border-accent bg-accent text-paper' : 'border-ink-faint bg-card text-transparent'
+        }`}
+      >
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden="true">
+          <path
+            d={indeterminate && !checked ? 'M5 12h14' : 'M4.5 12.5l5 5 10-11'}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+    </label>
   )
 }
 

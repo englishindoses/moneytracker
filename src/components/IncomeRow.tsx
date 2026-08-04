@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { DateInput, MoneyInput, TextInput, TickBox } from './fields'
+import { DateInput, MoneyInput, SelectBox, TextInput, TickBox } from './fields'
 import { DeleteRowButton } from './DeleteRowButton'
 import type { IncomeEntry, IncomePatch } from '../data/types'
 import { isIncomeReceived } from '../lib/totals'
@@ -8,13 +8,22 @@ interface IncomeRowProps {
   entry: IncomeEntry
   onPatch: (patch: IncomePatch) => void
   onDelete: () => void
+  /** Picked out for the selected total at the foot of the month. */
+  selected: boolean
+  onSelectedChange: (selected: boolean) => void
 }
 
 /** Labels are shown inside each cell on phones and replaced by the table header
  *  at 700px, which is where the row layout flattens into a single ledger line. */
 const LABEL = 'cell-label min-[700px]:hidden'
 
-export function IncomeRow({ entry, onPatch, onDelete }: IncomeRowProps) {
+export function IncomeRow({
+  entry,
+  onPatch,
+  onDelete,
+  selected,
+  onSelectedChange,
+}: IncomeRowProps) {
   const { t } = useTranslation()
   const received = isIncomeReceived(entry)
 
@@ -50,7 +59,22 @@ export function IncomeRow({ entry, onPatch, onDelete }: IncomeRowProps) {
   }
 
   return (
-    <li className="row-income sketch-box grid overflow-hidden bg-card px-2 py-2 shadow-sm">
+    <li
+      className={`row-income sketch-box grid overflow-hidden px-2 py-2 shadow-sm transition-colors ${
+        selected ? 'bg-accent-soft' : 'bg-card'
+      }`}
+    >
+      {/* Top-aligned while the row is three lines tall, so the box reads as
+          belonging to the entry rather than to the date line it would
+          otherwise sit beside. */}
+      <div className="flex items-start justify-center self-start [grid-area:sel] min-[700px]:items-center min-[700px]:self-center">
+        <SelectBox
+          checked={selected}
+          onChange={onSelectedChange}
+          label={`${t('common.select')}: ${entry.source || t('income.newSource')}`}
+        />
+      </div>
+
       <div className="[grid-area:name] min-w-0">
         <TextInput
           value={entry.source}
@@ -97,15 +121,16 @@ export function IncomeRow({ entry, onPatch, onDelete }: IncomeRowProps) {
         <TickBox checked={received} onChange={handleTick} label={t('income.receivedTick')} />
       </div>
 
-      <div className="flex min-w-0 items-center gap-1.5 [grid-area:rdate]">
+      {/* "Received on" is a long label next to a full date and a calendar button,
+          which is more than fits on one phone line in the wider faces — so this
+          one stacks, like the amount cells above it. */}
+      <div className="flex min-w-0 flex-col [grid-area:rdate] min-[700px]:block">
         <span className={LABEL}>{t('income.receivedDate')}</span>
-        <div className="min-w-0 flex-1">
-          <DateInput
-            value={entry.received_date}
-            onCommit={(value) => onPatch({ received_date: value })}
-            label={t('income.receivedDate')}
-          />
-        </div>
+        <DateInput
+          value={entry.received_date}
+          onCommit={(value) => onPatch({ received_date: value })}
+          label={t('income.receivedDate')}
+        />
       </div>
 
       <div className="flex items-start justify-end [grid-area:del]">

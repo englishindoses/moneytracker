@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { AppHeader } from '../components/AppHeader'
 import { ExpenseRow } from '../components/ExpenseRow'
 import { IncomeRow } from '../components/IncomeRow'
+import { SelectBox } from '../components/fields'
 import { Money, moneyClass } from '../components/Money'
 import {
   useAddExpense,
@@ -50,9 +51,72 @@ export function Month() {
     paste.mutate(kind, { onSuccess: (result) => setPasted({ ...result, kind }) })
   }
 
-  const totals = useMemo(
-    () => monthTotals(income.data ?? [], expenses.data ?? []),
-    [income.data, expenses.data],
+  const incomeRows = useMemo(() => income.data ?? [], [income.data])
+  const expenseRows = useMemo(() => expenses.data ?? [], [expenses.data])
+
+  const totals = useMemo(() => monthTotals(incomeRows, expenseRows), [incomeRows, expenseRows])
+
+  /* --- selection ------------------------------------------------------------
+     Ephemeral, and deliberately not persisted: it answers "what do these few
+     add up to?", which is a question you ask and then stop asking. One set
+     covers both tabs — ids are unique across them — so a selection made on the
+     income tab is still there when you come back to it.                       */
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set())
+
+  // A selection belongs to the month it was made in.
+  useEffect(() => setSelectedIds(new Set()), [period])
+
+  const setSelected = useCallback((id: string, on: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (on) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }, [])
+
+  const setManySelected = useCallback((ids: string[], on: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      for (const id of ids) {
+        if (on) next.add(id)
+        else next.delete(id)
+      }
+      return next
+    })
+  }, [])
+
+  // Filtering the live rows rather than trusting the set means an id left behind
+  // by a deleted row simply stops counting, with no cleanup to get wrong.
+  const selectedIncome = useMemo(
+    () => incomeRows.filter((row) => selectedIds.has(row.id)),
+    [incomeRows, selectedIds],
+  )
+  const selectedExpenses = useMemo(
+    () => expenseRows.filter((row) => selectedIds.has(row.id)),
+    [expenseRows, selectedIds],
+  )
+  const selectedTotals = useMemo(
+    () => monthTotals(selectedIncome, selectedExpenses),
+    [selectedIncome, selectedExpenses],
+  )
+
+  const tabRows = tab === 'income' ? incomeRows : expenseRows
+  const tabSelected = tab === 'income' ? selectedIncome : selectedExpenses
+  const allSelected = tabRows.length > 0 && tabSelected.length === tabRows.length
+
+  const selectAllBox = (
+    <SelectBox
+      checked={allSelected}
+      indeterminate={tabSelected.length > 0}
+      onChange={(on) =>
+        setManySelected(
+          tabRows.map((row) => row.id),
+          on,
+        )
+      }
+      label={t('common.selectAll')}
+    />
   )
 
   const loading = income.isLoading || expenses.isLoading
@@ -102,6 +166,9 @@ export function Month() {
         {tab === 'income' && !loading && (
           <section role="tabpanel" aria-labelledby="tab-income">
             <div className="row-income mb-1 hidden px-2 min-[700px]:grid">
+              <span className="flex items-center justify-center [grid-area:sel]">
+                {selectAllBox}
+              </span>
               <span className="cell-label [grid-area:name]">{t('income.source')}</span>
               <span className="cell-label [grid-area:date]">{t('income.date')}</span>
               <span className="cell-label text-right [grid-area:expected]">
@@ -115,17 +182,19 @@ export function Month() {
             </div>
 
             <ul className="space-y-2">
-              {(income.data ?? []).map((entry) => (
+              {incomeRows.map((entry) => (
                 <IncomeRow
                   key={entry.id}
                   entry={entry}
                   onPatch={(patch) => updateIncome.mutate({ id: entry.id, patch })}
                   onDelete={() => deleteIncome.mutate(entry.id)}
+                  selected={selectedIds.has(entry.id)}
+                  onSelectedChange={(on) => setSelected(entry.id, on)}
                 />
               ))}
             </ul>
 
-            {(income.data ?? []).length === 0 && (
+            {incomeRows.length === 0 && (
               <p className="py-6 text-center text-ink-soft">{t('common.emptyIncome')}</p>
             )}
 
@@ -150,6 +219,22 @@ export function Month() {
             <TotalsBar
               left={{ label: t('totals.expected'), value: totals.expected }}
               right={{ label: t('totals.received'), value: totals.received, tone: 'in' }}
+              selection={
+                selectedIncome.length > 0
+                  ? {
+                      count: selectedIncome.length,
+                      left: { label: t('totals.expected'), value: selectedTotals.expected },
+                      right: {
+                        label: t('totals.received'),
+                        value: selectedTotals.received,
+                        tone: 'in',
+                      },
+                      allSelected,
+                      onSelectAll: () => setManySelected(incomeRows.map((r) => r.id), true),
+                      onClear: () => setManySelected(incomeRows.map((r) => r.id), false),
+                    }
+                  : null
+              }
             />
           </section>
         )}
@@ -158,6 +243,9 @@ export function Month() {
         {tab === 'expenses' && !loading && (
           <section role="tabpanel" aria-labelledby="tab-expenses">
             <div className="row-expense mb-1 hidden px-2 min-[700px]:grid">
+              <span className="flex items-center justify-center [grid-area:sel]">
+                {selectAllBox}
+              </span>
               <span className="cell-label [grid-area:name]">{t('expenses.name')}</span>
               <span className="cell-label [grid-area:date]">{t('expenses.dueDate')}</span>
               <span className="cell-label text-right [grid-area:due]">{t('expenses.due')}</span>
@@ -166,17 +254,19 @@ export function Month() {
             </div>
 
             <ul className="space-y-2">
-              {(expenses.data ?? []).map((entry) => (
+              {expenseRows.map((entry) => (
                 <ExpenseRow
                   key={entry.id}
                   entry={entry}
                   onPatch={(patch) => updateExpense.mutate({ id: entry.id, patch })}
                   onDelete={() => deleteExpense.mutate(entry.id)}
+                  selected={selectedIds.has(entry.id)}
+                  onSelectedChange={(on) => setSelected(entry.id, on)}
                 />
               ))}
             </ul>
 
-            {(expenses.data ?? []).length === 0 && (
+            {expenseRows.length === 0 && (
               <p className="py-6 text-center text-ink-soft">{t('common.emptyExpenses')}</p>
             )}
 
@@ -201,6 +291,18 @@ export function Month() {
             <TotalsBar
               left={{ label: t('totals.due'), value: totals.due }}
               right={{ label: t('totals.paid'), value: totals.paid, tone: 'in' }}
+              selection={
+                selectedExpenses.length > 0
+                  ? {
+                      count: selectedExpenses.length,
+                      left: { label: t('totals.due'), value: selectedTotals.due },
+                      right: { label: t('totals.paid'), value: selectedTotals.paid, tone: 'in' },
+                      allSelected,
+                      onSelectAll: () => setManySelected(expenseRows.map((r) => r.id), true),
+                      onClear: () => setManySelected(expenseRows.map((r) => r.id), false),
+                    }
+                  : null
+              }
             />
           </section>
         )}
@@ -336,26 +438,88 @@ function PasteRow({
   )
 }
 
-/** Sticks to the bottom of the viewport so the totals are visible while you
- *  scroll a long month on a phone. */
+interface Figure {
+  label: string
+  value: number
+  tone?: 'in' | 'plain'
+}
+
+interface Selection {
+  count: number
+  left: Figure
+  right: Figure
+  allSelected: boolean
+  onSelectAll: () => void
+  onClear: () => void
+}
+
+/**
+ * Sticks to the bottom of the viewport so the totals are visible while you
+ * scroll a long month on a phone.
+ *
+ * When rows are picked out, the same two figures for just those rows sit above
+ * the month's — same labels, same order, so the pair can be read against each
+ * other at a glance. The strip is also where select-all and clear live, since
+ * the column header that would otherwise hold them does not exist on a phone.
+ */
 function TotalsBar({
   left,
   right,
+  selection,
 }: {
-  left: { label: string; value: number; tone?: 'in' | 'plain' }
-  right: { label: string; value: number; tone?: 'in' | 'plain' }
+  left: Figure
+  right: Figure
+  selection: Selection | null
 }) {
+  const { t } = useTranslation()
+
   return (
     <div className="sticky bottom-0 z-20 -mx-3 mt-4 border-t-[1.5px] border-ink-faint bg-paper/95 px-4 py-2.5 backdrop-blur">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
-        <span className="flex items-baseline gap-2">
-          <span className="cell-label">{left.label}</span>
-          <Money value={left.value} tone={left.tone} className="text-[1.05rem]" />
-        </span>
-        <span className="flex items-baseline gap-2">
-          <span className="cell-label">{right.label}</span>
-          <Money value={right.value} tone={right.tone} className="text-[1.05rem]" />
-        </span>
+      <div className="mx-auto max-w-3xl">
+        {selection && (
+          <div className="mb-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-[8px] bg-accent-soft px-2.5 py-1.5">
+            <span className="cell-label">
+              {t('totals.selectedTotal')} · {selection.count}
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="cell-label">{selection.left.label}</span>
+              <Money value={selection.left.value} tone={selection.left.tone} />
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="cell-label">{selection.right.label}</span>
+              <Money value={selection.right.value} tone={selection.right.tone} />
+            </span>
+            <span className="ml-auto flex items-baseline gap-3">
+              {!selection.allSelected && (
+                <button
+                  type="button"
+                  onClick={selection.onSelectAll}
+                  className="font-note text-[0.8rem] text-ink-soft underline decoration-ink-faint underline-offset-4 hover:text-ink"
+                >
+                  {t('common.selectAll')}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={selection.onClear}
+                className="font-note text-[0.8rem] text-ink-soft underline decoration-ink-faint underline-offset-4 hover:text-ink"
+              >
+                {t('common.clearSelection')}
+              </button>
+            </span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-4">
+          <span className="flex items-baseline gap-2">
+            <span className="cell-label">{left.label}</span>
+            <Money value={left.value} tone={left.tone} className="text-[1.05rem]" />
+          </span>
+          <span className="flex items-baseline gap-2">
+            <span className="cell-label">{right.label}</span>
+            <Money value={right.value} tone={right.tone} className="text-[1.05rem]" />
+          </span>
+        </div>
       </div>
     </div>
   )
