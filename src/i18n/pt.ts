@@ -148,6 +148,7 @@ export const pt: typeof en = {
     errorLoading: 'Não foi possível carregar seus dados.',
     offline: 'Você está offline — as alterações não serão salvas.',
     deleteRow: 'Excluir linha',
+    datePlaceholder: 'dd/mm/aaaa',
     emptyIncome: 'Nenhuma receita lançada neste mês.',
     emptyExpenses: 'Nenhuma despesa lançada neste mês.',
     total: 'Total',

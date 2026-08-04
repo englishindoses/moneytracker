@@ -72,3 +72,63 @@ export function formatDateShort(iso: string | null | undefined): string {
   if (!m || !d) return ''
   return `${d}/${m}`
 }
+
+/**
+ * The inverse of `formatDate`: what someone types in a date cell → ISO.
+ * Day first, always — never month first, whatever the device's locale is set to.
+ *
+ * Deliberately liberal about separators, because people type dates every which
+ * way: "5/12/2026", "05-12-26", "5.12.2026" and a bare run of digits
+ * ("05122026", "051226") all land on the same day.
+ *
+ * Three-way return, so the caller can tell "cleared" from "I can't read that":
+ *   string    → a valid date
+ *   null      → the field was emptied
+ *   undefined → unparseable; leave the stored value alone
+ */
+export function parseDate(input: string): string | null | undefined {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+
+  const parts = trimmed.split(/\D+/).filter(Boolean)
+  let day: string
+  let month: string
+  let year: string
+
+  if (parts.length === 3) {
+    ;[day, month, year] = parts
+  } else if (parts.length === 1 && (parts[0].length === 6 || parts[0].length === 8)) {
+    // Typed straight through, no separators.
+    day = parts[0].slice(0, 2)
+    month = parts[0].slice(2, 4)
+    year = parts[0].slice(4)
+  } else {
+    return undefined
+  }
+
+  const d = Number(day)
+  const m = Number(month)
+  // A two-digit year means this century: "26" is 2026, not 1926. This is a
+  // budget for the months you are living through, so there is no back-history
+  // to get wrong.
+  let y = Number(year)
+  if (year.length <= 2) y += 2000
+
+  if (!Number.isInteger(d) || !Number.isInteger(m) || !Number.isInteger(y)) return undefined
+  if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1000 || y > 9999) return undefined
+
+  const iso = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+
+  // Rejects 31/02 and friends: a real date survives the round trip unchanged.
+  const probe = new Date(`${iso}T00:00:00Z`)
+  if (
+    Number.isNaN(probe.getTime()) ||
+    probe.getUTCFullYear() !== y ||
+    probe.getUTCMonth() + 1 !== m ||
+    probe.getUTCDate() !== d
+  ) {
+    return undefined
+  }
+
+  return iso
+}

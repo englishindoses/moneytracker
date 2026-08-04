@@ -428,14 +428,16 @@ body {
     'paid paid paid';
 }
 
+/* The date columns carry a calendar button as well as dd/mm/yyyy, so they are
+   wider than the amount columns beside them. */
 @media (min-width: 700px) {
   .row-income {
-    grid-template-columns: minmax(0, 1.6fr) 8.5rem 7rem 7rem 2.75rem 8.5rem 2rem;
+    grid-template-columns: minmax(0, 1.6fr) 8.25rem 7rem 7rem 2.75rem 8.25rem 2rem;
     grid-template-areas: 'name date expected received tick rdate del';
   }
 
   .row-expense {
-    grid-template-columns: minmax(0, 1.8fr) 8.5rem 7.5rem 7.5rem 2.75rem 2rem;
+    grid-template-columns: minmax(0, 1.8fr) 8.25rem 7.5rem 7.5rem 2.75rem 2rem;
     grid-template-areas: 'name date due paid tick del';
   }
 }

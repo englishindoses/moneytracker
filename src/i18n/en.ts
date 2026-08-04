@@ -147,6 +147,7 @@ export const en = {
     errorLoading: 'Could not load your data.',
     offline: 'You are offline — changes will not be saved.',
     deleteRow: 'Delete row',
+    datePlaceholder: 'dd/mm/yyyy',
     emptyIncome: 'No income logged for this month yet.',
     emptyExpenses: 'No expenses logged for this month yet.',
     total: 'Total',
