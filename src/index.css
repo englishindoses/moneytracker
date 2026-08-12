@@ -54,6 +54,8 @@
   --accent-2: #7d766b;
   --money-in: #3a7350;
   --money-out: #b23a2f;
+  --settled: #e4efe4;
+  --settled-line: #7ba283;
   --tape: #e3ddd1;
   /* The notebook cover (login page only). Deliberately not grey even in the
      neutral theme — it is the first thing anyone sees. --cover-trim is the
@@ -98,6 +100,8 @@
   --accent-2: #6f8f66;
   --money-in: #3f7355;
   --money-out: #b23327;
+  --settled: #e8f1e6;
+  --settled-line: #7ea583;
   --tape: #f3dfc9;
   --cover: #b5407a;
   --cover-2: #7c2b58;
@@ -141,6 +145,8 @@
   --accent-2: #8f6329;
   --money-in: #2a7053;
   --money-out: #a83329;
+  --settled: #dfeee7;
+  --settled-line: #6ea48b;
   --tape: #d8e2ea;
   --cover: #2b5f9e;
   --cover-2: #17365e;
@@ -192,6 +198,8 @@
   --accent-2: #5b5238;
   --money-in: #446437;
   --money-out: #9c2c24;
+  --settled: #e7ecd6;
+  --settled-line: #8b9c6f;
   --tape: #e3d6ba;
   --cover: #8f3a2c;
   --cover-2: #55221a;
@@ -243,6 +251,8 @@
   --accent-2: #0e7490;
   --money-in: #15803d;
   --money-out: #be123c;
+  --settled: #e6f6ec;
+  --settled-line: #6bbd88;
   --tape: #dfe3e9;
   --cover: #4f46e5;
   --cover-2: #3730a3;
@@ -398,6 +408,21 @@ body {
      left of the row, so the checkbox reads as belonging to the whole entry
      rather than to the line it happens to sit on. */
   grid-template-columns: 1.5rem minmax(0, 1fr) 2.5rem 6.25rem;
+}
+
+/* Ticked off — paid in full, or received in full. The green is a fill rather
+   than a badge so the whole line reads as done at a glance while scrolling; the
+   matching border keeps the card from looking like a floating smudge. Every
+   theme declares its own pair, so the tint sits on its own paper. */
+.row-settled {
+  background: var(--settled);
+  border-color: var(--settled-line);
+}
+
+/* Selection normally shows as the accent fill, which a settled row has given up
+   to the green — so on those rows it becomes an inner rule instead. */
+.row-settled.is-selected {
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 /* Form controls default to an intrinsic min-width that refuses to shrink,

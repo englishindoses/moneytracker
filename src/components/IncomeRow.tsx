@@ -61,8 +61,8 @@ export function IncomeRow({
   return (
     <li
       className={`row-income sketch-box grid overflow-hidden px-2 py-2 shadow-sm transition-colors ${
-        selected ? 'bg-accent-soft' : 'bg-card'
-      }`}
+        received ? 'row-settled' : selected ? 'bg-accent-soft' : 'bg-card'
+      } ${selected ? 'is-selected' : ''}`}
     >
       {/* Top-aligned while the row is three lines tall, so the box reads as
           belonging to the entry rather than to the date line it would
