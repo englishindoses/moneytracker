@@ -217,13 +217,16 @@ export function Month() {
             />
 
             <TotalsBar
-              left={{ label: t('totals.expected'), value: totals.expected }}
+              left={{ label: t('totals.stillExpected'), value: totals.stillExpected }}
               right={{ label: t('totals.received'), value: totals.received, tone: 'in' }}
               selection={
                 selectedIncome.length > 0
                   ? {
                       count: selectedIncome.length,
-                      left: { label: t('totals.expected'), value: selectedTotals.expected },
+                      left: {
+                        label: t('totals.stillExpected'),
+                        value: selectedTotals.stillExpected,
+                      },
                       right: {
                         label: t('totals.received'),
                         value: selectedTotals.received,
@@ -289,13 +292,13 @@ export function Month() {
             />
 
             <TotalsBar
-              left={{ label: t('totals.due'), value: totals.due }}
+              left={{ label: t('totals.stillDue'), value: totals.stillDue }}
               right={{ label: t('totals.paid'), value: totals.paid, tone: 'in' }}
               selection={
                 selectedExpenses.length > 0
                   ? {
                       count: selectedExpenses.length,
-                      left: { label: t('totals.due'), value: selectedTotals.due },
+                      left: { label: t('totals.stillDue'), value: selectedTotals.stillDue },
                       right: { label: t('totals.paid'), value: selectedTotals.paid, tone: 'in' },
                       allSelected,
                       onSelectAll: () => setManySelected(expenseRows.map((r) => r.id), true),

@@ -59,8 +59,10 @@ export const en = {
   },
   totals: {
     expected: 'Expected',
+    stillExpected: 'Still expected',
     received: 'Received',
     due: 'Due',
+    stillDue: 'Still due',
     paid: 'Paid',
     totalExpected: 'Total expected',
     totalDue: 'Total due',

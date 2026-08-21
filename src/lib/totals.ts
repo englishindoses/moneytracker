@@ -21,6 +21,10 @@ export interface MonthTotals {
   received: number
   due: number
   paid: number
+  /** What is left to receive, summed per row so overpayments cannot mask it. */
+  stillExpected: number
+  /** What is left to pay, summed per row so overpayments cannot mask it. */
+  stillDue: number
   /** expected − due: positive is a surplus, negative a shortfall. */
   net: number
 }
@@ -34,5 +38,13 @@ export function monthTotals(income: IncomeEntry[], expenses: ExpenseEntry[]): Mo
   const received = round2(income.reduce((sum, e) => sum + e.received_amount, 0))
   const due = round2(expenses.reduce((sum, e) => sum + e.amount_due, 0))
   const paid = round2(expenses.reduce((sum, e) => sum + e.amount_paid, 0))
-  return { expected, received, due, paid, net: round2(expected - due) }
+
+  const stillExpected = round2(
+    income.reduce((sum, e) => sum + Math.max(0, e.expected_amount - e.received_amount), 0),
+  )
+  const stillDue = round2(
+    expenses.reduce((sum, e) => sum + Math.max(0, e.amount_due - e.amount_paid), 0),
+  )
+
+  return { expected, received, due, paid, stillExpected, stillDue, net: round2(expected - due) }
 }

@@ -60,8 +60,10 @@ export const pt: typeof en = {
   },
   totals: {
     expected: 'Previsto',
+    stillExpected: 'Ainda previsto',
     received: 'Recebido',
     due: 'A pagar',
+    stillDue: 'Ainda a pagar',
     paid: 'Pago',
     totalExpected: 'Total previsto',
     totalDue: 'Total a pagar',
